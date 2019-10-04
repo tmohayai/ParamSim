@@ -2,7 +2,7 @@
 
 cd ${PWD}/build
 rm -rf *
-cmake /dune/app/users/mtanaz/GArSoft/srcs/garsoft/Ana/ParamSim_debug_9
+cmake ${PWD}
 echo "done with cmake"
 make install
 echo "done with make install"
