@@ -30,7 +30,7 @@ typedef std::pair<float, std::string> P;
 //// 3) cmake ${module home direcory}
 //// 4) make install
 //// 5) cd ${module home direcory}
-//// 6) bin/cafanatree_module --edepfile ${name of the file that is output from anatree module} --outfile ${a name of your choosing for the output file}
+//// 6) bin/cafanatree_module --edepfile ${name of the anatree file that is output from anatree module, not to be confused with edepsim file} --outfile ${a name of your choosing for the output file}
 //////////////////////////////////////////////////////////////////////////
 
 // main loop function
