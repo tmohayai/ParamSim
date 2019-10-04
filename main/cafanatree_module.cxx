@@ -42,17 +42,23 @@ void loop(CAF *caf, TTree *tree)
     double gastpc_B = 0.5; // B field strength in Tesla
     double gastpc_padPitch = 0.1; // 1 mm. Actual pad pitch varies, which is going to be impossible to implement
     double gastpc_X0 = 1300.; // cm = 13m radiation length
-    std::vector<float> test_ereco;
+
     int seed = 7;
-    float preco_arr[10000], trklen_arr[10000], trklen_perp_arr[10000];
-    int pdg_arr[10000], pid_arr_reco[10000];
     TRandom3 *rando = new TRandom3( seed );
+
     std::vector<double> v = std::vector<double>();
     for (double pit=0.040; pit<20.0; pit+=0.001)
     {
         v.push_back(pit);
     }
+
     TRandom *R = new TRandom(time(0));
+
+    //TODO as function of momentum
+    float sigmaNeutronECAL_first = 0.11;
+    float sigmaNeutronECAL_rescatter = 0.26;
+
+    //------------------------------------------------------------------------
 
     Int_t           	 Event;
     Int_t           	 SubRun;
@@ -241,6 +247,9 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("VertZ", &VertZ, &b_VertZ);
     tree->SetBranchAddress("VertN", &VertN, &b_VertN);
 
+    //gamma, neutron, pi0, k0L, k0S, k0, delta0
+    std::vector<int> pdg_neutral = {22, 2112, 111, 130, 310, 311, 2114};
+
     // Main event loop
     int N = tree->GetEntries();
     for( int entry = 0; entry < N; entry++ )
@@ -261,6 +270,18 @@ void loop(CAF *caf, TTree *tree)
             std::string mcp_process = MCPProc->at(i);
             // std::cout << mcp_process << std::endl;
             if(mcp_process != "primary") continue;
+            nprimary++;
+
+            int pdg = PDG->at(i);
+            //need to ignore neutrals for this - put the value to 0
+            auto result = std::find(pdg_neutral.begin(), pdg_neutral.end(), pdg);
+            bool isNeutral = (result == pdg_neutral.end()) ? false : true;
+
+            if( isNeutral )
+            {
+                caf->trkLen[i] = 0.;
+                caf->trkLenPerp[i] = 0.;
+            }
 
             // calculate the total and the transverse track lengths and restrict the
             // tracklength to be above the gas TPC track length threshold
@@ -273,12 +294,7 @@ void loop(CAF *caf, TTree *tree)
             double tracklen_perp = tracklen_perp_vec.Mod();
             //std::cout << "tracklength is:" << tracklen << '\n';
             caf->trkLen[i] = tracklen;
-            trklen_arr[i] = tracklen;
             caf->trkLenPerp[i] = tracklen_perp;
-            trklen_perp_arr[i] = tracklen_perp;
-            //if (tracklen <= 0) continue;
-            //if( tracklen < gastpc_len ) continue;
-            nprimary++;
         }
 
         caf->nFSP = nprimary;
@@ -288,45 +304,70 @@ void loop(CAF *caf, TTree *tree)
         // all Gluckstern calculations happen in the following loop
         for(size_t i=0; i< MCPStartPX->size(); ++i )
         {
-            //if (tracklen <= 0) continue;
-            if( trklen_arr[i] > gastpc_len )
+            //check if mcp is primary
+            std::string mcp_process = MCPProc->at(i);
+            // std::cout << mcp_process << std::endl;
+            if(mcp_process != "primary") continue;
+            //std::cout << "Treating mcp " << i << std::endl;
+
+            TVector3 mcp(MCPStartPX->at(i),MCPStartPY->at(i),MCPStartPZ->at(i));
+            TVector3 xhat(1,0,0);
+            float ptrue = (mcp).Mag();
+            float pz = mcp.Z();
+            float pt = (mcp.Cross(xhat)).Mag();
+            float px = mcp.X();
+            float py = mcp.Y();
+            int pdg = PDG->at(i);
+            float mctrackid = MCPTrkID->at(i);
+            // point resolution
+            double sigma_x = 0.1;
+            // angle with respect to the incoming neutrino
+            float angle  = atan(mcp.X() / mcp.Z());
+            // save the true PDG, parametrized PID comes later
+            caf->truepdg[i] = pdg;
+            // save the true momentum
+            caf->truep[i] = ptrue;
+            caf->truepx[i] = MCPStartPX->at(i);
+            caf->truepy[i] = MCPStartPY->at(i);
+            caf->truepz[i] = MCPStartPZ->at(i);
+            caf->angle[i] = angle;
+
+            //for neutrons
+            if(pdg == 2112)
+            {
+                //check if it can be detected by the ECAL
+                //Assumes 40% efficiency to detect
+                double random_number = R->Rndm();
+                if(random_number > 0.4)
+                {
+                    //TODO random is first interaction of rescatter and smear accordingly to Chris's study
+                    //Detected in the ECAL
+                    caf->recopid[i] = 2112;
+                    float ereco = rando->Gaus( std::sqrt(ptrue*ptrue + 0.93957*0.93957), sigmaNeutronECAL_first );
+                    caf->erecon[i] = ereco > 0 ? ereco : 0.;
+                    std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + 0.93957*0.93957) << " ereco " << caf->erecon[i] << std::endl;
+                }
+                else{
+                    //not detected drop it
+                    caf->erecon[i] = 0.;
+                }
+            }
+
+            //for pi0s
+            if(pdg == 111)
+            {
+                //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
+            }
+
+            if( caf->trkLen[i] > gastpc_len )
             {
                 //std::cout << "tracklength is:" << trklen_arr[i] << '\n';
-                //check if mcp is primary
-                std::string mcp_process = MCPProc->at(i);
-                // std::cout << mcp_process << std::endl;
-                if(mcp_process != "primary") continue;
-
-                //std::cout << "Treating mcp " << i << std::endl;
-
-                TVector3 mcp(MCPStartPX->at(i),MCPStartPY->at(i),MCPStartPZ->at(i));
-                TVector3 xhat(1,0,0);
-                float ptrue = (mcp).Mag();
-                float pz = mcp.Z();
-                float pt = (mcp.Cross(xhat)).Mag();
-                float px = mcp.X();
-                float py = mcp.Y();
-                int pdg = PDG->at(i);
-                float mctrackid = MCPTrkID->at(i);
-                // point resolution
-                double sigma_x = 0.1;
-                // angle with respect to the incoming neutrino
-                float angle  = atan(mcp.X() / mcp.Z());
-                // save the true PDG, parametrized PID comes later
-                caf->truepdg[i] = pdg;
-                // save the true momentum
-                caf->truep[i] = ptrue;
-                caf->truepx[i] = MCPStartPX->at(i);
-                caf->truepy[i] = MCPStartPY->at(i);
-                caf->truepz[i] = MCPStartPZ->at(i);
-                caf->angle[i] = angle;
-
                 // calculate number of trackpoints
-                float nHits = round (trklen_arr[i] / gastpc_padPitch);
+                float nHits = round (caf->trkLen[i] / gastpc_padPitch);
                 // measurement term in Gluckstern formula
-                float fracSig_meas = sqrt(720./(nHits+4)) * ((0.01*gastpc_padPitch*ptrue) / (0.3 * gastpc_B * 0.0001 * trklen_perp_arr[i]*trklen_perp_arr[i]));
+                float fracSig_meas = sqrt(720./(nHits+4)) * ((0.01*gastpc_padPitch*ptrue) / (0.3 * gastpc_B * 0.0001 *caf->trkLenPerp[i]*caf->trkLenPerp[i]));
                 // multiple Coulomb scattering term in Gluckstern formula
-                float fracSig_MCS = (0.052*sqrt(1.43)) / (gastpc_B * sqrt(gastpc_X0*trklen_perp_arr[i]*0.0001));
+                float fracSig_MCS = (0.052*sqrt(1.43)) / (gastpc_B * sqrt(gastpc_X0*caf->trkLenPerp[i]*0.0001));
                 // momentum resoltion from the two terms above
                 float sigmaP = ptrue * sqrt( fracSig_meas*fracSig_meas + fracSig_MCS*fracSig_MCS );
                 // now Gaussian smear the true momentum using the momentum resolution
@@ -334,9 +375,9 @@ void loop(CAF *caf, TTree *tree)
 
                 // measurement term in the Gluckstern formula for calculating the
                 // angular resolution
-                float sigma_angle_1 = ((sigma_x * sigma_x * 0.0001) / trklen_arr[i]*trklen_arr[i]*0.0001) * (12*(nHits-1))/(nHits*(nHits+1));
+                float sigma_angle_1 = ((sigma_x * sigma_x * 0.0001) / caf->trkLen[i]*caf->trkLen[i]*0.0001) * (12*(nHits-1))/(nHits*(nHits+1));
                 // scattering term in Gluckstern formula
-                float sigma_angle_2 = (0.015*0.015 / (3. * ptrue * ptrue)) * (trklen_arr[i]/gastpc_X0);
+                float sigma_angle_2 = (0.015*0.015 / (3. * ptrue * ptrue)) * (caf->trkLen[i]/gastpc_X0);
                 // angular resolution from the two terms above
                 float sigma_angle = sqrt(sigma_angle_1 + sigma_angle_2);
                 // now Gaussian smear the true angle using the angular resolution
@@ -454,10 +495,10 @@ void loop(CAF *caf, TTree *tree)
                         } // closes the if statement
                     } // closes the conditional statement of trueparticlename == MC true pdg
                 } // closes the vertical bining loop of the pid matrix
+            }//close if track_length > tpc_min_length
+        } // closes the MC truth loop
+    } // closes the event loop
 
-            } // closes the MC truth loop
-        } // closes the event loop
-    }
     std::cout << "Fill CAF TTree" << std::endl;
     caf->FillTTree();
 } // closes the main loop function
