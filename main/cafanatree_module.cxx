@@ -23,7 +23,7 @@ typedef std::pair<float, std::string> P;
 //// Class:       cafanatree
 //// File Name:   cafanatree_module.cc
 ////
-//// Authors: Tanaz Mohayai and Eldwan Brianne 
+//// Authors: Tanaz Mohayai and Eldwan Brianne
 //// To run this module:
 //// 1) cd Build
 //// 2) rm -rf *
@@ -91,11 +91,11 @@ void loop(CAF *caf, TTree *tree)
     std::vector<float>   *VertZ = 0;
     std::vector<int>     *VertN = 0;
     std::vector<int> 	 *TrackIDNumber = 0;
-    
+
     std::vector<float>   *MCPEndX = 0;
     std::vector<float>   *MCPEndY = 0;
     std::vector<float>   *MCPEndZ = 0;
-	  
+
     std::vector<float>   *TrajMCPX = 0;
     std::vector<float>   *TrajMCPY = 0;
     std::vector<float>   *TrajMCPZ = 0;
@@ -156,11 +156,11 @@ void loop(CAF *caf, TTree *tree)
     TrackLenB = 0;
     MCPStartX = 0;
     MCPStartY = 0;
-    
+
     TrajMCPX= 0;
     TrajMCPY = 0;
     TrajMCPZ = 0;
-    
+
     MCPStartZ = 0;
     MCNuPx = 0;
     MCNuPy = 0;
@@ -168,11 +168,11 @@ void loop(CAF *caf, TTree *tree)
     MCPStartPX = 0;
     MCPStartPY = 0;
     MCPStartPZ = 0;
-    
+
     MCPEndX = 0;
     MCPEndY = 0;
     MCPEndZ = 0;
-    
+
     TrackStartX = 0;
     TrackStartY = 0;
     TrackStartZ = 0;
@@ -201,14 +201,14 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("TrackLenB", &TrackLenB, &b_TrackLenB);
     tree->SetBranchAddress("NTPCClustersOnTrack", &NTPCClustersOnTrack, &b_NTPCClustersOnTrack);
     tree->SetBranchAddress("TrackIDNumber", &TrackIDNumber, &b_TrackIDNumber);
-    
+
     tree->SetBranchAddress("MCPStartX", &MCPStartX, &b_MCPStartX);
     tree->SetBranchAddress("MCPStartY", &MCPStartY, &b_MCPStartY);
     tree->SetBranchAddress("MCPStartZ", &MCPStartZ, &b_MCPStartZ);
 
     tree->SetBranchAddress("MCPEndX", &MCPEndX, &b_MCPEndX);
     tree->SetBranchAddress("MCPEndY", &MCPEndY, &b_MCPEndY);
-    tree->SetBranchAddress("MCPEndZ", &MCPEndZ, &b_MCPEndZ);   
+    tree->SetBranchAddress("MCPEndZ", &MCPEndZ, &b_MCPEndZ);
 
 
     tree->SetBranchAddress("MCPStartPX", &MCPStartPX, &b_MCPStartPX);
@@ -219,7 +219,7 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("TrajMCPX", &TrajMCPX, &b_TrajMCPX);
     tree->SetBranchAddress("TrajMCPY", &TrajMCPY, &b_TrajMCPY);
     tree->SetBranchAddress("TrajMCPZ", &TrajMCPZ, &b_TrajMCPZ);
-    
+
     tree->SetBranchAddress("MCNuPx", &MCNuPx, &b_MCNuPx);
     tree->SetBranchAddress("MCNuPy", &MCNuPy, &b_MCNuPy);
     tree->SetBranchAddress("MCNuPz", &MCNuPz, &b_MCNuPz);
@@ -243,213 +243,221 @@ void loop(CAF *caf, TTree *tree)
 
     // Main event loop
     int N = tree->GetEntries();
-    // for( int entry = 0; entry < N; entry++ )
-    for( int entry = 0; entry < 1; entry++ )
+    for( int entry = 0; entry < N; entry++ )
+    // for( int entry = 0; entry < 1; entry++ )
     {
         tree->GetEntry(entry);
         caf->event = Event;
 
+        int nprimary = 0;
         //--------------------------------------------------------------------------
         // Start of Parameterized Reconstruction
         //--------------------------------------------------------------------------
 
         caf->Ev_rec[entry] = 0.;
-        // save the number of final state particles
-        caf->nFSP = MCPStartPX->size();
-        // calculate the total and the transverse track lengths and restrict the
-        // tracklength to be above the gas TPC track length threshold
-        for (int j = 0; j < MCPStartX->size(); ++j)
+        // save the number of final state particles that are primary
+        for(size_t i=0; i < MCPStartPX->size(); ++i )
         {
-            TVector3 trackstart(MCPStartX->at(j),MCPStartY->at(j),MCPStartZ->at(j));
-            TVector3 trackend(MCPEndX->at(j),MCPEndY->at(j),MCPEndZ->at(j));
+            std::string mcp_process = MCPProc->at(i);
+            // std::cout << mcp_process << std::endl;
+            if(mcp_process != "primary") continue;
 
-            TVector3 diff(MCPEndX->at(j)-MCPStartX->at(j),MCPEndY->at(j)-MCPStartY->at(j),MCPEndZ->at(j)-MCPStartZ->at(j));
-            TVector2 tracklen_perp_vec(trackend.Z() - trackstart.Z(),trackend.Y() - trackstart.Y());
-            double tracklen = (diff).Mag();
-            double tracklen_perp = (tracklen_perp_vec).Mod();
+            // calculate the total and the transverse track lengths and restrict the
+            // tracklength to be above the gas TPC track length threshold
+            TVector3 trackstart(MCPStartX->at(i), MCPStartY->at(i), MCPStartZ->at(i));
+            TVector3 trackend(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
+
+            TVector3 diff(MCPEndX->at(i) - MCPStartX->at(i), MCPEndY->at(i) - MCPStartY->at(i), MCPEndZ->at(i) - MCPStartZ->at(i));
+            TVector2 tracklen_perp_vec(trackend.Z() - trackstart.Z(), trackend.Y() - trackstart.Y());
+            double tracklen = diff.Mag();
+            double tracklen_perp = tracklen_perp_vec.Mod();
             //std::cout << "tracklength is:" << tracklen << '\n';
-	    caf->trkLen[j] = tracklen;
-            trklen_arr[j] = tracklen;
-            caf->trkLenPerp[j] = tracklen_perp;
-            trklen_perp_arr[j] = tracklen_perp;
+            caf->trkLen[i] = tracklen;
+            trklen_arr[i] = tracklen;
+            caf->trkLenPerp[i] = tracklen_perp;
+            trklen_perp_arr[i] = tracklen_perp;
             //if (tracklen <= 0) continue;
             //if( tracklen < gastpc_len ) continue;
-        } // bracket to close first track size for loop
+            nprimary++;
+        }
+
+        caf->nFSP = nprimary;
+
+        //---------------------------------------------------------------
 
         // all Gluckstern calculations happen in the following loop
         for(size_t i=0; i< MCPStartPX->size(); ++i )
         {
             //if (tracklen <= 0) continue;
             if( trklen_arr[i] > gastpc_len )
-	    {
-	    //std::cout << "tracklength is:" << trklen_arr[i] << '\n';
-	    //check if mcp is primary
-            std::string mcp_process = MCPProc->at(i);
-            // std::cout << mcp_process << std::endl;
-
-            if(mcp_process != "primary") continue;
-
-            //std::cout << "Treating mcp " << i << std::endl;
-
-            TVector3 mcp(MCPStartPX->at(i),MCPStartPY->at(i),MCPStartPZ->at(i));
-            TVector3 xhat(1,0,0);
-            float ptrue = (mcp).Mag();
-            float pz = mcp.Z();
-            float pt = (mcp.Cross(xhat)).Mag();
-            float px = mcp.X();
-            float py = mcp.Y();
-            int pdg = PDG->at(i);
-            float mctrackid = MCPTrkID->at(i);
-            // point resolution
-            double sigma_x = 0.1;
-            // angle with respect to the incoming neutrino
-            float angle  = atan(mcp.X() / mcp.Z());
-            // save the true PDG, parametrized PID comes later
-            caf->truepdg[i] = pdg;
-            // save the true momentum
-            caf->truep[i] = ptrue;
-            caf->truepx[i] = MCPStartPX->at(i);
-            caf->truepy[i] = MCPStartPY->at(i);
-            caf->truepz[i] = MCPStartPZ->at(i);
-            caf->angle[i] = angle;
-
-            // calculate number of trackpoints
-            float nHits = round (trklen_arr[i] / gastpc_padPitch);
-            // measurement term in Gluckstern formula
-            float fracSig_meas = sqrt(720./(nHits+4)) * ((0.01*gastpc_padPitch*ptrue) / (0.3 * gastpc_B * 0.0001 * trklen_perp_arr[i]*trklen_perp_arr[i]));
-            // multiple Coulomb scattering term in Gluckstern formula
-            float fracSig_MCS = (0.052*sqrt(1.43)) / (gastpc_B * sqrt(gastpc_X0*trklen_perp_arr[i]*0.0001));
-            // momentum resoltion from the two terms above
-            float sigmaP = ptrue * sqrt( fracSig_meas*fracSig_meas + fracSig_MCS*fracSig_MCS );
-	    // now Gaussian smear the true momentum using the momentum resolution
-            float preco = rando->Gaus( ptrue, sigmaP );
-
-            // measurement term in the Gluckstern formula for calculating the
-            // angular resolution
-            float sigma_angle_1 = ((sigma_x * sigma_x * 0.0001) / trklen_arr[i]*trklen_arr[i]*0.0001) * (12*(nHits-1))/(nHits*(nHits+1));
-            // scattering term in Gluckstern formula
-            float sigma_angle_2 = (0.015*0.015 / (3. * ptrue * ptrue)) * (trklen_arr[i]/gastpc_X0);
-            // angular resolution from the two terms above
-            float sigma_angle = sqrt(sigma_angle_1 + sigma_angle_2);
-            // now Gaussian smear the true angle using the angular resolution
-            float angle_reco = rando->Gaus(angle, sigma_angle);
-            // save reconstructed momentum and angle to cafanatree
-            caf->preco[i] = preco;
-            caf->anglereco[i] = angle_reco;
-
-            //--------------------------------------------------------------------------
-            // Start of PID Parametrization
-            //--------------------------------------------------------------------------
-
-            float p = caf->preco[i];
-            // read the PID parametrization ntuple from T. Junk
-            TString filename="pid.root";
-            TFile infile(filename,"READ");
-
-            char str[10];
-            std::vector<double> vec;
-            std::vector<int> pdglist = {2112, 211, 13, 2212, 321, 100001020, 11};
-            std::vector<std::string> pnamelist     = {"n", "#pi", "#mu", "p", "K", "d", "e"};
-            std::vector<std::string> recopnamelist = {"n", "#pi", "#mu", "p", "K", "d", "e"};
-
-            int qclosest = 0;
-            float dist = 99990.;
-            for (int q=0; q < 501; ++q)
             {
-                if (v[q] < p < v[q+1])
+                //std::cout << "tracklength is:" << trklen_arr[i] << '\n';
+                //check if mcp is primary
+                std::string mcp_process = MCPProc->at(i);
+                // std::cout << mcp_process << std::endl;
+                if(mcp_process != "primary") continue;
+
+                //std::cout << "Treating mcp " << i << std::endl;
+
+                TVector3 mcp(MCPStartPX->at(i),MCPStartPY->at(i),MCPStartPZ->at(i));
+                TVector3 xhat(1,0,0);
+                float ptrue = (mcp).Mag();
+                float pz = mcp.Z();
+                float pt = (mcp.Cross(xhat)).Mag();
+                float px = mcp.X();
+                float py = mcp.Y();
+                int pdg = PDG->at(i);
+                float mctrackid = MCPTrkID->at(i);
+                // point resolution
+                double sigma_x = 0.1;
+                // angle with respect to the incoming neutrino
+                float angle  = atan(mcp.X() / mcp.Z());
+                // save the true PDG, parametrized PID comes later
+                caf->truepdg[i] = pdg;
+                // save the true momentum
+                caf->truep[i] = ptrue;
+                caf->truepx[i] = MCPStartPX->at(i);
+                caf->truepy[i] = MCPStartPY->at(i);
+                caf->truepz[i] = MCPStartPZ->at(i);
+                caf->angle[i] = angle;
+
+                // calculate number of trackpoints
+                float nHits = round (trklen_arr[i] / gastpc_padPitch);
+                // measurement term in Gluckstern formula
+                float fracSig_meas = sqrt(720./(nHits+4)) * ((0.01*gastpc_padPitch*ptrue) / (0.3 * gastpc_B * 0.0001 * trklen_perp_arr[i]*trklen_perp_arr[i]));
+                // multiple Coulomb scattering term in Gluckstern formula
+                float fracSig_MCS = (0.052*sqrt(1.43)) / (gastpc_B * sqrt(gastpc_X0*trklen_perp_arr[i]*0.0001));
+                // momentum resoltion from the two terms above
+                float sigmaP = ptrue * sqrt( fracSig_meas*fracSig_meas + fracSig_MCS*fracSig_MCS );
+                // now Gaussian smear the true momentum using the momentum resolution
+                float preco = rando->Gaus( ptrue, sigmaP );
+
+                // measurement term in the Gluckstern formula for calculating the
+                // angular resolution
+                float sigma_angle_1 = ((sigma_x * sigma_x * 0.0001) / trklen_arr[i]*trklen_arr[i]*0.0001) * (12*(nHits-1))/(nHits*(nHits+1));
+                // scattering term in Gluckstern formula
+                float sigma_angle_2 = (0.015*0.015 / (3. * ptrue * ptrue)) * (trklen_arr[i]/gastpc_X0);
+                // angular resolution from the two terms above
+                float sigma_angle = sqrt(sigma_angle_1 + sigma_angle_2);
+                // now Gaussian smear the true angle using the angular resolution
+                float angle_reco = rando->Gaus(angle, sigma_angle);
+                // save reconstructed momentum and angle to cafanatree
+                caf->preco[i] = preco;
+                caf->anglereco[i] = angle_reco;
+
+                //--------------------------------------------------------------------------
+                // Start of PID Parametrization
+                //--------------------------------------------------------------------------
+
+                float p = caf->preco[i];
+                // read the PID parametrization ntuple from T. Junk
+                TString filename="pid.root";
+                TFile infile(filename,"READ");
+
+                char str[10];
+                std::vector<double> vec;
+                std::vector<int> pdglist = {2112, 211, 13, 2212, 321, 100001020, 11};
+                std::vector<std::string> pnamelist     = {"n", "#pi", "#mu", "p", "K", "d", "e"};
+                std::vector<std::string> recopnamelist = {"n", "#pi", "#mu", "p", "K", "d", "e"};
+
+                int qclosest = 0;
+                float dist = 99990.;
+                for (int q=0; q < 501; ++q)
                 {
-                    sprintf(str, "%d", q);
-                    std::string s = "pidmatrix";
-                    s.append(str);
-                    // read the 500 histograms one by one; each histogram is a
-                    // 6 by 6 matrix of probabilities for a given momentum value
-                    TH2F *pidinterp = (TH2F*) infile.Get(s.c_str())->Clone("pidinterp");
-                    //Check the title and the reco momentum take only the one that fits
-                    std::string fulltitle = pidinterp->GetTitle();
-                    unsigned first = fulltitle.find("=");
-                    unsigned last = fulltitle.find("GeV");
-                    std::string substr = fulltitle.substr(first+1, last - first-1);
-                    float pidinterp_mom = std::atof(substr.c_str());
-                    //std::cout << pidinterp_mom << std::endl;
-
-                    //calculate the distance between the bin and mom, store the q the closest
-                    float disttemp = std::abs(pidinterp_mom - p);
-                    //std::cout << disttemp << " " << dist << std::endl;
-                    if( disttemp < dist ){
-                        dist = disttemp;
-                        qclosest = q;
-
-                        std::cout << "pid mom " << pidinterp_mom << " reco mom " << p << " dist " << dist << " qclosest " << qclosest << std::endl;
-                    }
-                } // closes the pid vector loop
-            } // closes the "pidmatrix" loop
-
-            // std::cout << qclosest << std::endl;
-            sprintf(str, "%d", qclosest);
-            std::string mtx = "pidmatrix";
-            mtx.append(str);
-            // std::cout << mtx << std::endl;
-            TH2F *pidinterp = (TH2F*) infile.Get(mtx.c_str())->Clone("pidinterp");
-
-            //loop over the columns (true pid)
-            for (int pidm=1; pidm <= 6; ++pidm)
-            {
-                //if it is in the pid table at index pidm
-                std::vector< P > v_prob;
-                if ( abs(pdg) == pdglist[pidm] )
-                {
-                    //get true particle name
-                    std::string trueparticlename = pidinterp->GetXaxis()->GetBinLabel(pidm);
-                    if ( trueparticlename == pnamelist[pidm] )
+                    if (v[q] < p < v[q+1])
                     {
-                        //loop over the rows (reco pid)
-                        for (int pidr=1; pidr <= 6; ++pidr)
+                        sprintf(str, "%d", q);
+                        std::string s = "pidmatrix";
+                        s.append(str);
+                        // read the 500 histograms one by one; each histogram is a
+                        // 6 by 6 matrix of probabilities for a given momentum value
+                        TH2F *pidinterp = (TH2F*) infile.Get(s.c_str())->Clone("pidinterp");
+                        //Check the title and the reco momentum take only the one that fits
+                        std::string fulltitle = pidinterp->GetTitle();
+                        unsigned first = fulltitle.find("=");
+                        unsigned last = fulltitle.find("GeV");
+                        std::string substr = fulltitle.substr(first+1, last - first-1);
+                        float pidinterp_mom = std::atof(substr.c_str());
+                        //std::cout << pidinterp_mom << std::endl;
+
+                        //calculate the distance between the bin and mom, store the q the closest
+                        float disttemp = std::abs(pidinterp_mom - p);
+                        //std::cout << disttemp << " " << dist << std::endl;
+                        if( disttemp < dist ){
+                            dist = disttemp;
+                            qclosest = q;
+
+                            // std::cout << "pid mom " << pidinterp_mom << " reco mom " << p << " dist " << dist << " qclosest " << qclosest << std::endl;
+                        }
+                    } // closes the pid vector loop
+                } // closes the "pidmatrix" loop
+
+                // std::cout << qclosest << std::endl;
+                sprintf(str, "%d", qclosest);
+                std::string mtx = "pidmatrix";
+                mtx.append(str);
+                // std::cout << mtx << std::endl;
+                TH2F *pidinterp = (TH2F*) infile.Get(mtx.c_str())->Clone("pidinterp");
+
+                //loop over the columns (true pid)
+                for (int pidm=1; pidm <= 6; ++pidm)
+                {
+                    //if it is in the pid table at index pidm
+                    std::vector< P > v_prob;
+                    if ( abs(pdg) == pdglist[pidm] )
+                    {
+                        //get true particle name
+                        std::string trueparticlename = pidinterp->GetXaxis()->GetBinLabel(pidm);
+                        if ( trueparticlename == pnamelist[pidm] )
                         {
-                            std::string recoparticlename = pidinterp->GetYaxis()->GetBinLabel(pidr);
-                            if (recoparticlename == recopnamelist[pidr])
+                            //loop over the rows (reco pid)
+                            for (int pidr=1; pidr <= 6; ++pidr)
                             {
-                                float prob = pidinterp->GetBinContent(pidm,pidr);
+                                std::string recoparticlename = pidinterp->GetYaxis()->GetBinLabel(pidr);
+                                if (recoparticlename == recopnamelist[pidr])
+                                {
+                                    float prob = pidinterp->GetBinContent(pidm,pidr);
 
-                                std::cout << "true part " << trueparticlename << " true pid " << pdglist[pidm] << " reco name " << recoparticlename << " reco part list "
-                                << recopnamelist[pidr] <<  " true mom " << ptrue << " reco mom " <<  p << " prob " << pidinterp->GetBinContent(pidm,pidr) << '\n';
+                                    std::cout << "true part " << trueparticlename << " true pid " << pdglist[pidm] << " reco name " << recoparticlename << " reco part list "
+                                    << recopnamelist[pidr] <<  " true mom " << ptrue << " reco mom " <<  p << " prob " << pidinterp->GetBinContent(pidm,pidr) << '\n';
 
-                                //Need to check random number value and prob value then associate the recopdg to the reco prob
-                                v_prob.push_back( std::make_pair(prob, recoparticlename) );
-                            }
-                        }
-
-                        if(v_prob.size() > 1){
-                            //Order the vector of prob
-                            std::sort(v_prob.begin(), v_prob.end());
-                            //Throw a random number between 0 and 1
-                            double random_number = R->Rndm();
-                            //Make cumulative sum to get the range
-                            std::partial_sum(v_prob.begin(), v_prob.end(), v_prob.begin(), [](const P& x, const P& y){return P(x.first + y.first, y.second);});
-
-                            std::cout << "rand " << random_number << std::endl;
-                            for(int ivec = 0; ivec < v_prob.size(); ivec++)
-                            {
-                            	std::cout << "Cumulative prob " << v_prob.at(ivec).first << " particle " << v_prob.at(ivec).second << std::endl;
+                                    //Need to check random number value and prob value then associate the recopdg to the reco prob
+                                    v_prob.push_back( std::make_pair(prob, recoparticlename) );
+                                }
                             }
 
-                            for(int ivec = 0; ivec < v_prob.size()-1; ivec++)
-                            {
-                                if( random_number < v_prob.at(ivec+1).first && random_number >= v_prob.at(ivec).first )
-                                std::cout << "Reco pid " << v_prob.at(ivec+1).second <<std::endl;
-                                caf->recopid[i] = pdglist.at( std::distance( recopnamelist.begin(), std::find(recopnamelist.begin(), recopnamelist.end(), v_prob.at(ivec+1).second) ) );
-                            }
-                        }
-                        else{
-                            std::cout << v_prob.at(0).first << " " << v_prob.at(0).second << std::endl;
-                            caf->recopid[i] = pdglist.at( std::distance( recopnamelist.begin(), std::find(recopnamelist.begin(), recopnamelist.end(), v_prob.at(0).second) ) );
-                        }
-                    } // closes the if statement
-                } // closes the conditional statement of trueparticlename == MC true pdg
-            } // closes the vertical bining loop of the pid matrix
+                            if(v_prob.size() > 1){
+                                //Order the vector of prob
+                                std::sort(v_prob.begin(), v_prob.end());
+                                //Throw a random number between 0 and 1
+                                double random_number = R->Rndm();
+                                //Make cumulative sum to get the range
+                                std::partial_sum(v_prob.begin(), v_prob.end(), v_prob.begin(), [](const P& x, const P& y){return P(x.first + y.first, y.second);});
 
-        } // closes the MC truth loop
-    } // closes the event loop
-}
+                                // std::cout << "rand " << random_number << std::endl;
+                                // for(int ivec = 0; ivec < v_prob.size(); ivec++)
+                                // {
+                                //     std::cout << "Cumulative prob " << v_prob.at(ivec).first << " particle " << v_prob.at(ivec).second << std::endl;
+                                // }
+
+                                for(int ivec = 0; ivec < v_prob.size()-1; ivec++)
+                                {
+                                    if( random_number < v_prob.at(ivec+1).first && random_number >= v_prob.at(ivec).first )
+                                    // std::cout << "Reco pid " << v_prob.at(ivec+1).second <<std::endl;
+                                    caf->recopid[i] = pdglist.at( std::distance( recopnamelist.begin(), std::find(recopnamelist.begin(), recopnamelist.end(), v_prob.at(ivec+1).second) ) );
+                                }
+                            }
+                            else{
+                                std::cout << v_prob.at(0).first << " " << v_prob.at(0).second << std::endl;
+                                caf->recopid[i] = pdglist.at( std::distance( recopnamelist.begin(), std::find(recopnamelist.begin(), recopnamelist.end(), v_prob.at(0).second) ) );
+                            }
+                        } // closes the if statement
+                    } // closes the conditional statement of trueparticlename == MC true pdg
+                } // closes the vertical bining loop of the pid matrix
+
+            } // closes the MC truth loop
+        } // closes the event loop
+    }
     std::cout << "Fill CAF TTree" << std::endl;
     caf->FillTTree();
 } // closes the main loop function

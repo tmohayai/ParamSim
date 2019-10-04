@@ -1,2 +1,0 @@
-/dune/app/users/mtanaz/GArSoft/srcs/garsoft/Ana/ParamSim_debug_9/lib/libCAFAnaModule.so
-/dune/app/users/mtanaz/GArSoft/srcs/garsoft/Ana/ParamSim_debug_9/bin/cafanatree_module

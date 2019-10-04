@@ -1,9 +1,9 @@
 #/bin/bash
 
 cd ${PWD}/build
-rm -rf *
-cmake ${PWD}
-echo "done with cmake"
+# rm -rf *
+# cmake ..
+# echo "done with cmake"
 make install
 echo "done with make install"
 cd ..
