@@ -105,6 +105,7 @@ void loop(CAF *caf, TTree *tree)
     std::vector<float>   *TrajMCPX = 0;
     std::vector<float>   *TrajMCPY = 0;
     std::vector<float>   *TrajMCPZ = 0;
+    std::vector<int>     *TrajMCPTrajIndex = 0;
 
     TBranch        *b_Event;
     TBranch        *b_SubRun;
@@ -112,7 +113,7 @@ void loop(CAF *caf, TTree *tree)
     TBranch        *b_NType;
     TBranch        *b_CCNC;
     TBranch        *b_PDG;
-    TBranch	   *b_MCPTrkID;
+    TBranch	       *b_MCPTrkID;
     TBranch        *b_TrackLenB;
     TBranch 	   *b_NTPCClustersOnTrack;
     TBranch 	   *b_TrackLenF;
@@ -151,6 +152,7 @@ void loop(CAF *caf, TTree *tree)
     TBranch        *b_TrajMCPX;
     TBranch        *b_TrajMCPY;
     TBranch        *b_TrajMCPZ;
+    TBranch        *b_TrajMCPTrajIndex;
 
     NType = 0;
     CCNC = 0;
@@ -225,6 +227,7 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("TrajMCPX", &TrajMCPX, &b_TrajMCPX);
     tree->SetBranchAddress("TrajMCPY", &TrajMCPY, &b_TrajMCPY);
     tree->SetBranchAddress("TrajMCPZ", &TrajMCPZ, &b_TrajMCPZ);
+    tree->SetBranchAddress("TrajMCPTrajIndex", &TrajMCPTrajIndex, &b_TrajMCPTrajIndex);
 
     tree->SetBranchAddress("MCNuPx", &MCNuPx, &b_MCNuPx);
     tree->SetBranchAddress("MCNuPy", &MCNuPy, &b_MCNuPy);
@@ -285,14 +288,24 @@ void loop(CAF *caf, TTree *tree)
 
             // calculate the total and the transverse track lengths and restrict the
             // tracklength to be above the gas TPC track length threshold
-            TVector3 trackstart(MCPStartX->at(i), MCPStartY->at(i), MCPStartZ->at(i));
-            TVector3 trackend(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
+            double tracklen = 0.;
+            double tracklen_perp = 0.;
 
-            TVector3 diff(MCPEndX->at(i) - MCPStartX->at(i), MCPEndY->at(i) - MCPStartY->at(i), MCPEndZ->at(i) - MCPStartZ->at(i));
-            TVector2 tracklen_perp_vec(trackend.Z() - trackstart.Z(), trackend.Y() - trackstart.Y());
-            double tracklen = diff.Mag();
-            double tracklen_perp = tracklen_perp_vec.Mod();
-            //std::cout << "tracklength is:" << tracklen << '\n';
+            for(int itraj = 1; itraj < TrajMCPX->size(); itraj++){
+                //check that it is the correct mcp
+                if(TrajMCPTrajIndex->at(itraj) == i){
+                    // find the length of the track by getting the distance between each hit
+                    TVector3 diff(TrajMCPX->at(itraj) - TrajMCPX->at(itraj-1), TrajMCPY->at(itraj) - TrajMCPY->at(itraj-1), TrajMCPZ->at(itraj) - TrajMCPZ->at(itraj-1));
+                    // perp length
+                    TVector2 tracklen_perp_vec(TrajMCPZ->at(itraj) - TrajMCPZ->at(itraj-1), TrajMCPY->at(itraj) - TrajMCPY->at(itraj-1));
+                    // Summing up
+                    tracklen += diff.Mag();
+                    tracklen_perp += tracklen_perp_vec.Mod();
+                }
+            }
+
+            std::cout << "tracklength for mcp " << i << " is: " << tracklen << " cm" << std::endl;
+
             caf->trkLen[i] = tracklen;
             caf->trkLenPerp[i] = tracklen_perp;
         }
