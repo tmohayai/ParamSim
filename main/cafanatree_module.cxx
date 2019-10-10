@@ -63,12 +63,24 @@ void loop(CAF *caf, TTree *tree)
     Int_t           	 Event;
     Int_t           	 SubRun;
     Int_t           	 Run;
+    std::vector<Float_t> *MC_Q2 = 0;
+    std::vector<Float_t> *MC_W = 0;
+    std::vector<Float_t> *MC_Y = 0;
+    std::vector<Float_t> *MC_X = 0;
+    std::vector<Float_t> *MC_Theta = 0;
+    std::vector<Float_t> *MC_T = 0;
+
     std::vector<int>     *NType = 0;
     std::vector<int>     *CCNC = 0;
+    std::vector<int>     *Mode = 0;
+    std::vector<int>     *Gint=0;
+    std::vector<int>     *TgtPDG=0;
+    std::vector<int>     *Weight=0;
+    std::vector<int>     *GT_T=0;
+    std::vector<int>     *Mother=0;
+    std::vector<int>     *PDGMother=0;
+
     std::vector<int>     *PDG = 0;
-    std::vector<float>   *TrackLenF = 0;
-    std::vector<float>   *TrackLenB = 0;
-    std::vector<int>     *NTPCClustersOnTrack = 0;
     std::vector<float>   *MCNuPx = 0;
     std::vector<float>   *MCNuPy = 0;
     std::vector<float>   *MCNuPz = 0;
@@ -80,23 +92,10 @@ void loop(CAF *caf, TTree *tree)
     std::vector<float>   *MCPStartPY = 0;
     std::vector<float>   *MCPStartPZ = 0;
     std::vector<std::string>   *MCPProc = 0;
-    std::vector<float>   *TrackStartX = 0;
-    std::vector<float>   *TrackStartY = 0;
-    std::vector<float>   *TrackStartZ = 0;
-    std::vector<float>   *TrackStartPX = 0;
-    std::vector<float>   *TrackStartPY = 0;
-    std::vector<float>   *TrackStartPZ = 0;
-    std::vector<float>   *TrackEndX = 0;
-    std::vector<float>   *TrackEndY = 0;
-    std::vector<float>   *TrackEndZ = 0;
-    std::vector<float>   *TrackEndPX = 0;
-    std::vector<float>   *TrackEndPY = 0;
-    std::vector<float>   *TrackEndPZ = 0;
     std::vector<float>   *VertX = 0;
     std::vector<float>   *VertY = 0;
     std::vector<float>   *VertZ = 0;
     std::vector<int>     *VertN = 0;
-    std::vector<int> 	 *TrackIDNumber = 0;
 
     std::vector<float>   *MCPEndX = 0;
     std::vector<float>   *MCPEndY = 0;
@@ -110,13 +109,22 @@ void loop(CAF *caf, TTree *tree)
     TBranch        *b_Event;
     TBranch        *b_SubRun;
     TBranch        *b_Run;
+    TBranch        *b_MC_Q2;
+    TBranch        *b_MC_W;
+    TBranch        *b_MC_Y;
+    TBranch        *b_MC_X;
+    TBranch        *b_MC_Theta;
+    TBranch        *b_MC_T;
     TBranch        *b_NType;
     TBranch        *b_CCNC;
     TBranch        *b_PDG;
-    TBranch	       *b_MCPTrkID;
-    TBranch        *b_TrackLenB;
-    TBranch 	   *b_NTPCClustersOnTrack;
-    TBranch 	   *b_TrackLenF;
+    TBranch        *b_Mode;
+    TBranch        *b_Gint;
+    TBranch        *b_TgtPDG;
+    TBranch        *b_GT_T;
+    TBranch        *b_Mother;
+    TBranch        *b_PDGMother;
+    TBranch	   *b_MCPTrkID;
     TBranch        *b_MCNuPx;
     TBranch        *b_MCNuPy;
     TBranch        *b_MCNuPz;
@@ -127,23 +135,10 @@ void loop(CAF *caf, TTree *tree)
     TBranch        *b_MCPStartPY;
     TBranch        *b_MCPStartPZ;
     TBranch        *b_MCPProc;
-    TBranch        *b_TrackStartX;
-    TBranch        *b_TrackStartY;
-    TBranch        *b_TrackStartZ;
-    TBranch        *b_TrackStartPX;
-    TBranch        *b_TrackStartPY;
-    TBranch        *b_TrackStartPZ;
-    TBranch        *b_TrackEndX;
-    TBranch        *b_TrackEndY;
-    TBranch        *b_TrackEndZ;
-    TBranch        *b_TrackEndPX;
-    TBranch        *b_TrackEndPY;
-    TBranch        *b_TrackEndPZ;
     TBranch        *b_VertX;
     TBranch        *b_VertY;
     TBranch        *b_VertZ;
     TBranch        *b_VertN;
-    TBranch 	   *b_TrackIDNumber;
 
     TBranch        *b_MCPEndX;
     TBranch        *b_MCPEndY;
@@ -154,21 +149,28 @@ void loop(CAF *caf, TTree *tree)
     TBranch        *b_TrajMCPZ;
     TBranch        *b_TrajMCPTrajIndex;
 
+    MC_Q2=0;
+    MC_W=0;
+    MC_Y=0;
+    MC_X=0;
+    MC_Theta=0;
+    MC_T=0;
     NType = 0;
     CCNC = 0;
     PDG = 0;
-    TrackIDNumber = 0;
     MCPTrkID = 0;
-    TrackLenF = 0;
-    NTPCClustersOnTrack = 0;
-    TrackLenB = 0;
     MCPStartX = 0;
     MCPStartY = 0;
 
     TrajMCPX= 0;
     TrajMCPY = 0;
     TrajMCPZ = 0;
-
+    Mode = 0;
+    Gint = 0;
+    TgtPDG=0;
+    GT_T = 0;
+    Mother=0;
+    PDGMother=0;
     MCPStartZ = 0;
     MCNuPx = 0;
     MCNuPy = 0;
@@ -181,18 +183,6 @@ void loop(CAF *caf, TTree *tree)
     MCPEndY = 0;
     MCPEndZ = 0;
 
-    TrackStartX = 0;
-    TrackStartY = 0;
-    TrackStartZ = 0;
-    TrackStartPX = 0;
-    TrackStartPY = 0;
-    TrackStartPZ = 0;
-    TrackEndX = 0;
-    TrackEndY = 0;
-    TrackEndZ = 0;
-    TrackEndPX = 0;
-    TrackEndPY = 0;
-    TrackEndPZ = 0;
     VertX = 0;
     VertY = 0;
     VertZ = 0;
@@ -205,11 +195,14 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("CCNC", &CCNC, &b_CCNC);
     tree->SetBranchAddress("PDG", &PDG, &b_PDG);
     tree->SetBranchAddress("MCPTrkID", &MCPTrkID, &b_MCPTrkID);
-    tree->SetBranchAddress("TrackLenF", &TrackLenF, &b_TrackLenF);
-    tree->SetBranchAddress("TrackLenB", &TrackLenB, &b_TrackLenB);
-    tree->SetBranchAddress("NTPCClustersOnTrack", &NTPCClustersOnTrack, &b_NTPCClustersOnTrack);
-    tree->SetBranchAddress("TrackIDNumber", &TrackIDNumber, &b_TrackIDNumber);
-
+    
+    tree->SetBranchAddress("MC_Q2", &MC_Q2, &b_MC_Q2);
+    tree->SetBranchAddress("MC_W", &MC_W, &b_MC_W);
+    tree->SetBranchAddress("MC_Y", &MC_Y, &b_MC_Y);
+    tree->SetBranchAddress("MC_X", &MC_X, &b_MC_X);
+    tree->SetBranchAddress("MC_Theta", &MC_Theta, &b_MC_Theta);
+    tree->SetBranchAddress("MC_T", &MC_T, &b_MC_T);
+    
     tree->SetBranchAddress("MCPStartX", &MCPStartX, &b_MCPStartX);
     tree->SetBranchAddress("MCPStartY", &MCPStartY, &b_MCPStartY);
     tree->SetBranchAddress("MCPStartZ", &MCPStartZ, &b_MCPStartZ);
@@ -217,7 +210,13 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("MCPEndX", &MCPEndX, &b_MCPEndX);
     tree->SetBranchAddress("MCPEndY", &MCPEndY, &b_MCPEndY);
     tree->SetBranchAddress("MCPEndZ", &MCPEndZ, &b_MCPEndZ);
-
+    
+    tree->SetBranchAddress("Mode", &Mode, &b_Mode);
+    tree->SetBranchAddress("Gint", &Gint, &b_Gint);
+    tree->SetBranchAddress("TgtPDG", &TgtPDG, &b_TgtPDG);
+    tree->SetBranchAddress("GT_T", &GT_T, &b_GT_T);
+    tree->SetBranchAddress("Mother", &Mother, &b_Mother);
+    tree->SetBranchAddress("PDGMother", &PDGMother, &b_PDGMother);
 
     tree->SetBranchAddress("MCPStartPX", &MCPStartPX, &b_MCPStartPX);
     tree->SetBranchAddress("MCPStartPY", &MCPStartPY, &b_MCPStartPY);
@@ -233,18 +232,6 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("MCNuPy", &MCNuPy, &b_MCNuPy);
     tree->SetBranchAddress("MCNuPz", &MCNuPz, &b_MCNuPz);
 
-    tree->SetBranchAddress("TrackStartX", &TrackStartX, &b_TrackStartX);
-    tree->SetBranchAddress("TrackStartY", &TrackStartY, &b_TrackStartY);
-    tree->SetBranchAddress("TrackStartZ", &TrackStartZ, &b_TrackStartZ);
-    tree->SetBranchAddress("TrackStartPX", &TrackStartPX, &b_TrackStartPX);
-    tree->SetBranchAddress("TrackStartPY", &TrackStartPY, &b_TrackStartPY);
-    tree->SetBranchAddress("TrackStartPZ", &TrackStartPZ, &b_TrackStartPZ);
-    tree->SetBranchAddress("TrackEndX", &TrackEndX, &b_TrackEndX);
-    tree->SetBranchAddress("TrackEndY", &TrackEndY, &b_TrackEndY);
-    tree->SetBranchAddress("TrackEndZ", &TrackEndZ, &b_TrackEndZ);
-    tree->SetBranchAddress("TrackEndPX", &TrackEndPX, &b_TrackEndPX);
-    tree->SetBranchAddress("TrackEndPY", &TrackEndPY, &b_TrackEndPY);
-    tree->SetBranchAddress("TrackEndPZ", &TrackEndPZ, &b_TrackEndPZ);
     tree->SetBranchAddress("VertX", &VertX, &b_VertX);
     tree->SetBranchAddress("VertY", &VertY, &b_VertY);
     tree->SetBranchAddress("VertZ", &VertZ, &b_VertZ);
@@ -256,23 +243,22 @@ void loop(CAF *caf, TTree *tree)
     // Main event loop
     int N = tree->GetEntries();
     for( int entry = 0; entry < N; entry++ )
-    // for( int entry = 0; entry < 1; entry++ )
+    //for( int entry = 0; entry < 1; entry++ )
     {
         tree->GetEntry(entry);
-        caf->event = Event;
+        caf->Event = Event;
 
         int nprimary = 0;
         //--------------------------------------------------------------------------
         // Start of Parameterized Reconstruction
         //--------------------------------------------------------------------------
 
-        caf->Ev_rec[entry] = 0.;
         // save the number of final state particles that are primary
         for(size_t i=0; i < MCPStartPX->size(); ++i )
         {
             std::string mcp_process = MCPProc->at(i);
             // std::cout << mcp_process << std::endl;
-            if(mcp_process != "primary") continue;
+            //if(mcp_process != "primary") continue;
             nprimary++;
 
             int pdg = PDG->at(i);
@@ -311,16 +297,30 @@ void loop(CAF *caf, TTree *tree)
         }
 
         caf->nFSP = nprimary;
+        caf->Run = Run;
+        caf->Event = Event;
+        caf->SubRun = SubRun;
+	caf->ccnc[entry] = CCNC->at(0);
+        caf->ntype[entry] = NType->at(0);
+	caf->q2[entry] = MC_Q2->at(0);
+        caf->w[entry] = MC_W->at(0);
+        caf->y[entry] = MC_Y->at(0);
+        caf->x[entry] = MC_X->at(0);
+        caf->theta[entry] = MC_Theta->at(0);
+        caf->mode[entry] = Mode->at(0);
+	caf->gint[entry] = Gint->at(0);
+	caf->tgtpdg[entry] = TgtPDG->at(0);
+	caf->gt_t[entry] = GT_T->at(0);
+	caf->t[entry] = MC_T->at(0);
 
-        //---------------------------------------------------------------
-
+	//---------------------------------------------------------------
         // all Gluckstern calculations happen in the following loop
         for(size_t i=0; i< MCPStartPX->size(); ++i )
         {
             //check if mcp is primary
             std::string mcp_process = MCPProc->at(i);
             // std::cout << mcp_process << std::endl;
-            if(mcp_process != "primary") continue;
+            //if(mcp_process != "primary") continue;
             //std::cout << "Treating mcp " << i << std::endl;
 
             TVector3 mcp(MCPStartPX->at(i),MCPStartPY->at(i),MCPStartPZ->at(i));
@@ -339,13 +339,20 @@ void loop(CAF *caf, TTree *tree)
             // save the true PDG, parametrized PID comes later
             caf->truepdg[i] = pdg;
             // save the true momentum
-            caf->truep[i] = ptrue;
+            //caf->truep[i] = ptrue;
             caf->truepx[i] = MCPStartPX->at(i);
             caf->truepy[i] = MCPStartPY->at(i);
             caf->truepz[i] = MCPStartPZ->at(i);
-            caf->angle[i] = angle;
-
-            //for neutrons
+            //caf->angle[i] = angle;
+            caf->MCPStartX[i] = MCPStartX->at(i);
+            caf->MCPStartY[i] = MCPStartY->at(i);
+            caf->MCPStartZ[i] = MCPStartZ->at(i);
+	    caf->MCPEndX[i] = MCPEndX->at(i);
+            caf->MCPEndY[i] = MCPEndY->at(i);
+            caf->MCPEndZ[i] = MCPEndZ->at(i);
+	    caf->mother[i] = Mother->at(i);
+            caf->pdgmother[i] = PDGMother->at(i);
+	    //for neutrons
             if(pdg == 2112)
             {
                 //check if it can be detected by the ECAL
@@ -398,7 +405,8 @@ void loop(CAF *caf, TTree *tree)
                 // save reconstructed momentum and angle to cafanatree
                 caf->preco[i] = preco;
                 caf->anglereco[i] = angle_reco;
-
+		caf->truep[i] = ptrue;
+		caf->angle[i] = angle;		
                 //--------------------------------------------------------------------------
                 // Start of PID Parametrization
                 //--------------------------------------------------------------------------
@@ -471,7 +479,7 @@ void loop(CAF *caf, TTree *tree)
                                 if (recoparticlename == recopnamelist[pidr])
                                 {
                                     float prob = pidinterp->GetBinContent(pidm,pidr);
-
+				    caf->prob_arr[i] = prob;
                                     std::cout << "true part " << trueparticlename << " true pid " << pdglist[pidm] << " reco name " << recoparticlename << " reco part list "
                                     << recopnamelist[pidr] <<  " true mom " << ptrue << " reco mom " <<  p << " prob " << pidinterp->GetBinContent(pidm,pidr) << '\n';
 
@@ -518,7 +526,7 @@ void loop(CAF *caf, TTree *tree)
 
 void ShowHelp()
 {
-    std::cout << "./cafanatree_module --edepfile <inputfile> --outfile <outputfile>" << std::endl;
+    std::cout << "./cafanatree_module --infile <inputfile> --outfile <outputfile>" << std::endl;
 }
 
 
@@ -529,19 +537,19 @@ int main( int argc, char const *argv[] )
         return 2;
     }
 
-    if( argv[1] != std::string("--edepfile") || argv[3] != std::string("--outfile") ) {
+    if( argv[1] != std::string("--infile") || argv[3] != std::string("--outfile") ) {
         ShowHelp();
         return -2;
     }
 
     // get command line options
     std::string outfile = "";
-    std::string edepfile = "";
+    std::string infile = "";
     int p = 0;
     while( p < argc )
     {
-        if( argv[p] == std::string("--edepfile") ){
-            edepfile = argv[p+1];
+        if( argv[p] == std::string("--infile") ){
+            infile = argv[p+1];
             p++;
         }
         else if( argv[p] == std::string("--outfile") ){
@@ -553,10 +561,10 @@ int main( int argc, char const *argv[] )
         }
     }
 
-    printf( "Making CAF from edep-sim tree dump: %s\n", edepfile.c_str() );
+    printf( "Making CAF from edep-sim tree dump: %s\n", infile.c_str() );
     printf( "Output CAF file: %s\n", outfile.c_str() );
 
-    TFile * tf = new TFile( edepfile.c_str() );
+    TFile * tf = new TFile( infile.c_str() );
     if(nullptr == tf)
     return -1;
     TTree * tree = (TTree*) tf->Get( "anatree/GArAnaTree" );
