@@ -25,15 +25,22 @@ public:
 
     void CloseTFile();
 
+    void ClearVectors();
 
-
-    int nFSP , Run, verts, Event, SubRun, VertN, vert;
-    int mode[10000], ccnc[10000], ntype[10000], gint[10000], weight[10000], tgtpdg[10000], gt_t[10000], mother[10000], pdgmother[10000], intert[10000];
-    double q2[10000], w[10000], y[10000], x[10000], theta[10000], t[10000], mctime[10000], vertt, vertq, mcnupx[10000], mcnupy[10000], mcnupz[10000], vertx, verty, vertz;
-    int truepdg[10000], recopid[10000], MCPStartX[10000], MCPStartY[10000], MCPStartZ[10000], MCPEndX[10000], MCPEndY[10000], MCPEndZ[10000], MCPStartPX[10000], MCPStartPY[10000], MCPStartPZ[10000];
-    std::string MCProc[10000], MCEndProc[10000];
-    double prob_arr[10000], trkLen[10000], trkLenPerp[10000];
-    double partereco[10000], anglereco[10000], angle[10000], preco[10000], erecon[10000],truep[10000], truepx[10000], truepy[10000], truepz[10000];
+    //Need to be careful as they can be modified easily / better to make vectors!
+    //Event-wise values
+    int Run, Event, SubRun;
+    //Generator values
+    std::vector<int> mode, ccnc, ntype, gint, weight, tgtpdg, gt_t, intert;
+    std::vector<double> q2, w, y, x, theta, t, mctime, mcnupx, mcnupy, mcnupz, vertx, verty, vertz;
+    //MC Particle Values
+    std::vector<int> nFSP;
+    std::vector<int> mother, pdgmother, truepdg, MCPStartX, MCPStartY, MCPStartZ, MCPEndX, MCPEndY, MCPEndZ, MCPStartPX, MCPStartPY, MCPStartPZ;
+    std::vector<std::string> MCProc, MCEndProc;
+    std::vector<float> trkLen, trkLenPerp, truep, truepx, truepy, truepz, angle;
+    //Reco values
+    std::vector<int> recopid;
+    std::vector<float> prob_arr, partereco, anglereco, preco, erecon;
 
 private:
     std::string _outputFile;
