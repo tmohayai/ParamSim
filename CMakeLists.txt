@@ -33,7 +33,7 @@ mark_as_advanced( CMAKE_INSTALL_RPATH_USE_LINK_PATH )
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
 # Find packages
-find_package( ROOT REQUIRED Minuit2 TMVA TMVAGui )
+find_package( ROOT REQUIRED Core Eve Minuit2 TMVA TMVAGui EG )
 add_definitions( ${ROOT_DEFINITIONS} )
 
 message ( STATUS "Root found in $ENV{ROOTSYS}" )
