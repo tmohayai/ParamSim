@@ -25,8 +25,6 @@ public:
 
     void CloseTFile();
 
-
-
     int nFSP , Run, verts, Event, SubRun, VertN, vert;
     int mode[10000], ccnc[10000], ntype[10000], gint[10000], weight[10000], tgtpdg[10000], gt_t[10000], mother[10000], pdgmother[10000], intert[10000];
     double q2[10000], w[10000], y[10000], x[10000], theta[10000], t[10000], mctime[10000], vertt, vertq, mcnupx[10000], mcnupy[10000], mcnupz[10000], vertx, verty, vertz;

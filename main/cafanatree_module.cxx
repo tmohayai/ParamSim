@@ -195,14 +195,14 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("CCNC", &CCNC, &b_CCNC);
     tree->SetBranchAddress("PDG", &PDG, &b_PDG);
     tree->SetBranchAddress("MCPTrkID", &MCPTrkID, &b_MCPTrkID);
-    
+
     tree->SetBranchAddress("MC_Q2", &MC_Q2, &b_MC_Q2);
     tree->SetBranchAddress("MC_W", &MC_W, &b_MC_W);
     tree->SetBranchAddress("MC_Y", &MC_Y, &b_MC_Y);
     tree->SetBranchAddress("MC_X", &MC_X, &b_MC_X);
     tree->SetBranchAddress("MC_Theta", &MC_Theta, &b_MC_Theta);
     tree->SetBranchAddress("MC_T", &MC_T, &b_MC_T);
-    
+
     tree->SetBranchAddress("MCPStartX", &MCPStartX, &b_MCPStartX);
     tree->SetBranchAddress("MCPStartY", &MCPStartY, &b_MCPStartY);
     tree->SetBranchAddress("MCPStartZ", &MCPStartZ, &b_MCPStartZ);
@@ -210,7 +210,7 @@ void loop(CAF *caf, TTree *tree)
     tree->SetBranchAddress("MCPEndX", &MCPEndX, &b_MCPEndX);
     tree->SetBranchAddress("MCPEndY", &MCPEndY, &b_MCPEndY);
     tree->SetBranchAddress("MCPEndZ", &MCPEndZ, &b_MCPEndZ);
-    
+
     tree->SetBranchAddress("Mode", &Mode, &b_Mode);
     tree->SetBranchAddress("Gint", &Gint, &b_Gint);
     tree->SetBranchAddress("TgtPDG", &TgtPDG, &b_TgtPDG);
@@ -277,6 +277,8 @@ void loop(CAF *caf, TTree *tree)
             double tracklen = 0.;
             double tracklen_perp = 0.;
 
+            //TODO check if the mcp point is within the TPC volume! Skip for mcp in the ECAL (showers)
+            //TODO Link showers to original mcp?
             for(int itraj = 1; itraj < TrajMCPX->size(); itraj++){
                 //check that it is the correct mcp
                 if(TrajMCPTrajIndex->at(itraj) == i){
@@ -290,7 +292,7 @@ void loop(CAF *caf, TTree *tree)
                 }
             }
 
-            std::cout << "tracklength for mcp " << i << " is: " << tracklen << " cm" << std::endl;
+            // std::cout << "tracklength for mcp " << i << " is: " << tracklen << " cm" << std::endl;
 
             caf->trkLen[i] = tracklen;
             caf->trkLenPerp[i] = tracklen_perp;
@@ -300,20 +302,20 @@ void loop(CAF *caf, TTree *tree)
         caf->Run = Run;
         caf->Event = Event;
         caf->SubRun = SubRun;
-	caf->ccnc[entry] = CCNC->at(0);
+        caf->ccnc[entry] = CCNC->at(0);
         caf->ntype[entry] = NType->at(0);
-	caf->q2[entry] = MC_Q2->at(0);
+        caf->q2[entry] = MC_Q2->at(0);
         caf->w[entry] = MC_W->at(0);
         caf->y[entry] = MC_Y->at(0);
         caf->x[entry] = MC_X->at(0);
         caf->theta[entry] = MC_Theta->at(0);
         caf->mode[entry] = Mode->at(0);
-	caf->gint[entry] = Gint->at(0);
-	caf->tgtpdg[entry] = TgtPDG->at(0);
-	caf->gt_t[entry] = GT_T->at(0);
-	caf->t[entry] = MC_T->at(0);
+        caf->gint[entry] = Gint->at(0);
+        caf->tgtpdg[entry] = TgtPDG->at(0);
+        caf->gt_t[entry] = GT_T->at(0);
+        caf->t[entry] = MC_T->at(0);
 
-	//---------------------------------------------------------------
+        //---------------------------------------------------------------
         // all Gluckstern calculations happen in the following loop
         for(size_t i=0; i< MCPStartPX->size(); ++i )
         {
@@ -347,12 +349,12 @@ void loop(CAF *caf, TTree *tree)
             caf->MCPStartX[i] = MCPStartX->at(i);
             caf->MCPStartY[i] = MCPStartY->at(i);
             caf->MCPStartZ[i] = MCPStartZ->at(i);
-	    caf->MCPEndX[i] = MCPEndX->at(i);
+            caf->MCPEndX[i] = MCPEndX->at(i);
             caf->MCPEndY[i] = MCPEndY->at(i);
             caf->MCPEndZ[i] = MCPEndZ->at(i);
-	    caf->mother[i] = Mother->at(i);
+            caf->mother[i] = Mother->at(i);
             caf->pdgmother[i] = PDGMother->at(i);
-	    //for neutrons
+            //for neutrons
             if(pdg == 2112)
             {
                 //check if it can be detected by the ECAL
@@ -402,11 +404,12 @@ void loop(CAF *caf, TTree *tree)
                 float sigma_angle = sqrt(sigma_angle_1 + sigma_angle_2);
                 // now Gaussian smear the true angle using the angular resolution
                 float angle_reco = rando->Gaus(angle, sigma_angle);
+
                 // save reconstructed momentum and angle to cafanatree
                 caf->preco[i] = preco;
                 caf->anglereco[i] = angle_reco;
-		caf->truep[i] = ptrue;
-		caf->angle[i] = angle;		
+                caf->truep[i] = ptrue;
+                caf->angle[i] = angle;
                 //--------------------------------------------------------------------------
                 // Start of PID Parametrization
                 //--------------------------------------------------------------------------
@@ -479,9 +482,9 @@ void loop(CAF *caf, TTree *tree)
                                 if (recoparticlename == recopnamelist[pidr])
                                 {
                                     float prob = pidinterp->GetBinContent(pidm,pidr);
-				    caf->prob_arr[i] = prob;
-                                    std::cout << "true part " << trueparticlename << " true pid " << pdglist[pidm] << " reco name " << recoparticlename << " reco part list "
-                                    << recopnamelist[pidr] <<  " true mom " << ptrue << " reco mom " <<  p << " prob " << pidinterp->GetBinContent(pidm,pidr) << '\n';
+                                    caf->prob_arr[i] = prob;
+                                    // std::cout << "true part " << trueparticlename << " true pid " << pdglist[pidm] << " reco name " << recoparticlename << " reco part list "
+                                    // << recopnamelist[pidr] <<  " true mom " << ptrue << " reco mom " <<  p << " prob " << pidinterp->GetBinContent(pidm,pidr) << '\n';
 
                                     //Need to check random number value and prob value then associate the recopdg to the reco prob
                                     v_prob.push_back( std::make_pair(prob, recoparticlename) );
@@ -510,7 +513,7 @@ void loop(CAF *caf, TTree *tree)
                                 }
                             }
                             else{
-                                std::cout << v_prob.at(0).first << " " << v_prob.at(0).second << std::endl;
+                                // std::cout << v_prob.at(0).first << " " << v_prob.at(0).second << std::endl;
                                 caf->recopid[i] = pdglist.at( std::distance( recopnamelist.begin(), std::find(recopnamelist.begin(), recopnamelist.end(), v_prob.at(0).second) ) );
                             }
                         } // closes the if statement

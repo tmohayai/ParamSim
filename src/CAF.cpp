@@ -25,42 +25,63 @@ bool CAF::BookTFile()
         cafMVA = new TTree( "caf", "caf tree" );
         cafMVA->SetDirectory(0);
 
-	cafMVA = new TTree( "caf", "caf tree" );
-        cafMVA->SetDirectory(0);
-
+        //Run number
         cafMVA->Branch( "Run", &Run, "Run/I" );
+        //Event number
         cafMVA->Branch( "Event", &Event, "Event/I" );
+        //Sub Run number
         cafMVA->Branch( "SubRun", &SubRun, "SubRun/I" );
+        //Mode
         cafMVA->Branch( "mode", &mode, "mode[Event]/I" );
+        //Q2 of the event
         cafMVA->Branch( "q2", &q2, "q2[Event]/D" );
+        //
         cafMVA->Branch( "w", &w, "w[Event]/D" );
+        //
         cafMVA->Branch( "y", &y, "y[Event]/D" );
+        //
         cafMVA->Branch( "x", &x, "x[Event]/D" );
+        //
         cafMVA->Branch( "theta", &theta, "theta[Event]/D" );
+
         cafMVA->Branch( "t", &t, "t[Event]/D" );
+
         cafMVA->Branch( "mctime", &mctime, "mctime[Event]/D" );
+
         cafMVA->Branch( "vertt", &vertt, "vertt[Event]/D" );
+
         cafMVA->Branch( "vertq", &vertq, "vertq[Event]/D" );
+
         cafMVA->Branch( "ntype", &ntype, "ntype[Event]/I" );
+
         cafMVA->Branch( "ccnc", &ccnc, "ccnc[Event]/I" );
+
         cafMVA->Branch( "gint", &gint, "gint[Event]/I" );
+
         cafMVA->Branch( "tgtpdg", &tgtpdg, "tgtpdg[Event]/I" );
+
         cafMVA->Branch( "weight", &weight, "weight[Event]/I" );
+
         cafMVA->Branch( "gt_t", &gt_t, "gt_t[Event]/I" );
+
         cafMVA->Branch( "intert", &intert, "intert[Event]/I" );
+
         cafMVA->Branch( "VertN", &VertN, "VertN/I" );
-        cafMVA->Branch( "verts", &verts, "verts/I" );
+
         cafMVA->Branch( "mcnupx", &mcnupx, "mcnupx[Event]/D" );
         cafMVA->Branch( "mcnupy", &mcnupy, "mcnupy[Event]/D" );
         cafMVA->Branch( "mcnupz", &mcnupz, "mcnupz[Event]/D" );
 
-	cafMVA->Branch( "vertx", &vertx, "vertx[verts]/D" );
+        cafMVA->Branch( "verts", &verts, "verts/I" );
+
+        cafMVA->Branch( "vertx", &vertx, "vertx[verts]/D" );
         cafMVA->Branch( "verty", &verty, "verty[verts]/D" );
         cafMVA->Branch( "vertz", &vertz, "vertz[verts]/D" );
 
-	cafMVA->Branch( "nFSP", &nFSP, "nFSP/I" );
+        cafMVA->Branch( "nFSP", &nFSP, "nFSP/I" );
         cafMVA->Branch( "mother", &mother, "mother[nFSP]/I" );
         cafMVA->Branch( "pdgmother", &pdgmother, "pdgmother[nFSP]/I" );
+
         cafMVA->Branch( "MCPStartX", &MCPStartX, "MCPStartX[nFSP]/D" );
         cafMVA->Branch( "MCPStartY", &MCPStartY, "MCPStartY[nFSP]/D" );
         cafMVA->Branch( "MCPStartZ", &MCPStartZ, "MCPStartZ[nFSP]/D" );
@@ -70,7 +91,7 @@ bool CAF::BookTFile()
         cafMVA->Branch( "MCPStartPZ", &MCPStartPZ, "MCPStartPZ[nFSP]/D" );
 
         cafMVA->Branch( "MCPEndX", &MCPEndX, "MCPEndX[nFSP]/D" );
-        cafMVA->Branch( "MCPEndtY", &MCPEndY, "MCPEndY[nFSP]/D" );
+        cafMVA->Branch( "MCPEndY", &MCPEndY, "MCPEndY[nFSP]/D" );
         cafMVA->Branch( "MCPEndZ", &MCPEndZ, "MCPEndZ[nFSP]/D" );
 
         cafMVA->Branch( "MCProc", &MCProc, "MCProc[nFSP]/S" );
@@ -84,8 +105,9 @@ bool CAF::BookTFile()
         cafMVA->Branch( "anglereco", &anglereco, "anglereco[nFSP]/D" );
         cafMVA->Branch( "angle", &angle, "angle[nFSP]/D" );
         cafMVA->Branch( "erecon", &erecon, "erecon[nFSP]/D" );
-        cafMVA->Branch( "truep", &truep, "truep[nFSP]/D" );	
-	cafMVA->Branch( "prob_arr", &prob_arr, "prob_arr[nFSP]/D" );
+        cafMVA->Branch( "truep", &truep, "truep[nFSP]/D" );
+        cafMVA->Branch( "prob_arr", &prob_arr, "prob_arr[nFSP]/D" );
+        
         return true;
     }
 }
