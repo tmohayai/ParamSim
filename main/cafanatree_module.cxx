@@ -299,30 +299,12 @@ void loop(CAF *caf, TTree *tree)
             // angle with respect to the incoming neutrino
             float angle  = atan(mcp.X() / mcp.Z());
 
-            // save the true PDG, parametrized PID comes later
-            caf->truepdg.push_back(pdg);
-            caf->truepx.push_back(MCPStartPX->at(i));
-            caf->truepy.push_back(MCPStartPY->at(i));
-            caf->truepz.push_back(MCPStartPZ->at(i));
-            caf->MCPStartX.push_back(MCPStartX->at(i));
-            caf->MCPStartY.push_back(MCPStartY->at(i));
-            caf->MCPStartZ.push_back(MCPStartZ->at(i));
-            caf->MCPEndX.push_back(MCPEndX->at(i));
-            caf->MCPEndY.push_back(MCPEndY->at(i));
-            caf->MCPEndZ.push_back(MCPEndZ->at(i));
-            caf->mother.push_back(Mother->at(i));
-            caf->pdgmother.push_back(PDGMother->at(i));
-            // save the true momentum
-            caf->truep.push_back(ptrue);
-            // save the true angle
-            caf->angle.push_back(angle);
-
             //Get ending process
             std::string mcp_endprocess = MCPEndProc->at(i);
             //Save MC process
-            caf->MCProc.push_back(mcp_process);
+            /*caf->MCProc.push_back(mcp_process);
             caf->MCEndProc.push_back(mcp_endprocess);
-
+	        */
             //for neutrons
             if(pdg == 2112)
             {
@@ -374,7 +356,27 @@ void loop(CAF *caf, TTree *tree)
                 //TODO is that correct? What if it is a scatter in the TPC? Need to check if daughter is same particle
                 float preco = 0;
                 TVector3 point(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
-                if(isInTPC(point))
+                // moved all the truth-level MC vectors to here to have same-sized
+                // vectors between truth and reco
+		        caf->truepdg.push_back(pdg);
+            	caf->truepx.push_back(MCPStartPX->at(i));
+            	caf->truepy.push_back(MCPStartPY->at(i));
+            	caf->truepz.push_back(MCPStartPZ->at(i));
+            	caf->MCPStartX.push_back(MCPStartX->at(i));
+            	caf->MCPStartY.push_back(MCPStartY->at(i));
+            	caf->MCPStartZ.push_back(MCPStartZ->at(i));
+            	caf->MCPEndX.push_back(MCPEndX->at(i));
+            	caf->MCPEndY.push_back(MCPEndY->at(i));
+            	caf->MCPEndZ.push_back(MCPEndZ->at(i));
+            	caf->mother.push_back(Mother->at(i));
+            	caf->pdgmother.push_back(PDGMother->at(i));
+            	// save the true momentum
+                caf->truep.push_back(ptrue);
+                // save the true angle
+                caf->angle.push_back(angle);
+		        caf->MCProc.push_back(mcp_process);
+            	caf->MCEndProc.push_back(mcp_endprocess);
+		        if(isInTPC(point))
                 {
                     preco = rando->Gaus( ptrue, sigmaP_short );
                     float angle_reco = rando->Gaus(angle, sigma_angle_short);
