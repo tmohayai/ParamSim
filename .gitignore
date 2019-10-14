@@ -1,5 +1,4 @@
-anatree_100.root
-2.root
+*.root
 bin/
 build/
 lib/
