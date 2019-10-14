@@ -48,7 +48,7 @@ if(NOT COMPILER_SUPPORTS_CXX_FLAGS)
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} does not support cxx flags ${CMAKE_CXX_FLAGS}")
 endif()
 
-#make caf lib
+#make libs
 include_directories( BEFORE include ${ROOT_INCLUDE_DIRS} )
 aux_source_directory( src SRC_FILES )
 
@@ -57,7 +57,14 @@ target_link_libraries(${PROJECT_NAME} ${ROOT_LIBRARIES})
 
 install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
 
+#skimmer
+add_executable(mcp_skimmer main/test_skimmer.cxx)
+target_link_libraries(mcp_skimmer ${PROJECT_NAME})
+
+#caf module
 add_executable(cafanatree_module main/cafanatree_module.cxx)
 target_link_libraries(cafanatree_module ${PROJECT_NAME})
 
+#install in the bin folder
+install( TARGETS mcp_skimmer RUNTIME DESTINATION bin )
 install( TARGETS cafanatree_module RUNTIME DESTINATION bin )
