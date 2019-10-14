@@ -467,30 +467,6 @@ void CAF::loop()
             // angle with respect to the incoming neutrino
             float angle  = atan(mcp.X() / mcp.Z());
 
-            // save the true PDG, parametrized PID comes later
-            truepdg.push_back(pdg);
-            truepx.push_back(MCPStartPX->at(i));
-            truepy.push_back(MCPStartPY->at(i));
-            truepz.push_back(MCPStartPZ->at(i));
-            _MCPStartX.push_back(MCPStartX->at(i));
-            _MCPStartY.push_back(MCPStartY->at(i));
-            _MCPStartZ.push_back(MCPStartZ->at(i));
-            _MCPEndX.push_back(MCPEndX->at(i));
-            _MCPEndY.push_back(MCPEndY->at(i));
-            _MCPEndZ.push_back(MCPEndZ->at(i));
-            mother.push_back(Mother->at(i));
-            pdgmother.push_back(PDGMother->at(i));
-            // save the true momentum
-            truep.push_back(ptrue);
-            // save the true angle
-            _angle.push_back(angle);
-
-            //Get ending process
-            std::string mcp_endprocess = MCPEndProc->at(i);
-            //Save MC process
-            _MCProc.push_back(mcp_process);
-            _MCEndProc.push_back(mcp_endprocess);
-
             //for neutrons
             if(pdg == 2112)
             {
@@ -542,6 +518,31 @@ void CAF::loop()
                 //TODO is that correct? What if it is a scatter in the TPC? Need to check if daughter is same particle
                 float preco = 0;
                 TVector3 point(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
+
+                // save the true PDG, parametrized PID comes later
+                truepdg.push_back(pdg);
+                truepx.push_back(MCPStartPX->at(i));
+                truepy.push_back(MCPStartPY->at(i));
+                truepz.push_back(MCPStartPZ->at(i));
+                _MCPStartX.push_back(MCPStartX->at(i));
+                _MCPStartY.push_back(MCPStartY->at(i));
+                _MCPStartZ.push_back(MCPStartZ->at(i));
+                _MCPEndX.push_back(MCPEndX->at(i));
+                _MCPEndY.push_back(MCPEndY->at(i));
+                _MCPEndZ.push_back(MCPEndZ->at(i));
+                mother.push_back(Mother->at(i));
+                pdgmother.push_back(PDGMother->at(i));
+                // save the true momentum
+                truep.push_back(ptrue);
+                // save the true angle
+                _angle.push_back(angle);
+
+                //Get ending process
+                std::string mcp_endprocess = MCPEndProc->at(i);
+                //Save MC process
+                _MCProc.push_back(mcp_process);
+                _MCEndProc.push_back(mcp_endprocess);
+
                 if(isInTPC(point))
                 {
                     preco = rando->Gaus( ptrue, sigmaP_short );
