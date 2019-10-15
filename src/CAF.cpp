@@ -68,7 +68,6 @@ bool CAF::BookTFile()
         cafMVA->Branch("x", &x);
         cafMVA->Branch("theta", &theta);
         cafMVA->Branch("t", &t);
-        cafMVA->Branch("mctime", &mctime);
         cafMVA->Branch("ntype", &ntype);
         cafMVA->Branch("ccnc", &ccnc);
         cafMVA->Branch("gint", &gint);
@@ -88,6 +87,8 @@ bool CAF::BookTFile()
         //MC Particle info
         cafMVA->Branch("mother", &mother);
         cafMVA->Branch("pdgmother", &pdgmother);
+        cafMVA->Branch("MCPTrkID", &mctrkid);
+        cafMVA->Branch("MCPTime", &mctime);
         cafMVA->Branch("MCPStartX", &_MCPStartX);
         cafMVA->Branch("MCPStartY", &_MCPStartY);
         cafMVA->Branch("MCPStartZ", &_MCPStartZ);
@@ -162,7 +163,6 @@ void CAF::ClearVectors()
     x.clear();
     theta.clear();
     t.clear();
-    mctime.clear();
     mcnupx.clear();
     mcnupy.clear();
     mcnupz.clear();
@@ -175,6 +175,8 @@ void CAF::ClearVectors()
     mother.clear();
     pdgmother.clear();
     truepdg.clear();
+    mctime.clear();
+    mctrkid.clear();
     _MCPStartX.clear();
     _MCPStartY.clear();
     _MCPStartZ.clear();
@@ -244,6 +246,7 @@ void CAF::loop()
     fRes->FixParameter(1, ECAL_const);
 
     float ECAL_pi0_resolution = 0.13; //sigmaE/E in between at rest (17%) and high energy (~few %)
+    float ECAL_time_resolution = 1.; // 1 ns time resolution
 
     TParticlePDG *neutron = TDatabasePDG::Instance()->GetParticle(2112);
     float neutron_mass = neutron->Mass(); //in GeV
@@ -281,6 +284,7 @@ void CAF::loop()
     std::vector<int>     *Mother=0;
     std::vector<int>     *PDGMother=0;
     std::vector<int>     *MCPTrkID = 0;
+    std::vector<float>   *MCPTime = 0;
     std::vector<float>   *MCPStartX = 0;
     std::vector<float>   *MCPStartY = 0;
     std::vector<float>   *MCPStartZ = 0;
@@ -326,6 +330,7 @@ void CAF::loop()
     //MC info
     _inttree->SetBranchAddress("PDG", &PDG);
     _inttree->SetBranchAddress("MCPTrkID", &MCPTrkID);
+    _inttree->SetBranchAddress("MCPTime", &MCPTime);
     _inttree->SetBranchAddress("MCPStartX", &MCPStartX);
     _inttree->SetBranchAddress("MCPStartY", &MCPStartY);
     _inttree->SetBranchAddress("MCPStartZ", &MCPStartZ);
@@ -465,6 +470,7 @@ void CAF::loop()
             float mctrackid = MCPTrkID->at(i);
             // angle with respect to the incoming neutrino
             float angle  = atan(mcp.X() / mcp.Z());
+            float time = rando->Gaus(MCPTime->at(i), ECAL_time_resolution);
 
             //for neutrons
             if(pdg == 2112)
@@ -499,6 +505,8 @@ void CAF::loop()
                     //Save MC process
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
+                    mctime.push_back(time);
+                    mctrkid.push_back(MCPTrkID->at(i));
                 }
             }
 
@@ -529,6 +537,8 @@ void CAF::loop()
                 //Save MC process
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
+                mctime.push_back(time);
+                mctrkid.push_back(MCPTrkID->at(i));
             }
 
             //for gammas
@@ -565,6 +575,8 @@ void CAF::loop()
                         //Save MC process
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
+                        mctime.push_back(time);
+                        mctrkid.push_back(MCPTrkID->at(i));
                     }
                 }
             }
@@ -597,6 +609,8 @@ void CAF::loop()
                 //Save MC process
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
+                mctime.push_back(time);
+                mctrkid.push_back(MCPTrkID->at(i));
 
                 if(isInTPC(point))
                 {

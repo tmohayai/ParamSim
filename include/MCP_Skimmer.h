@@ -53,6 +53,9 @@ public:
     /* Check if it is a Bremsstrahlung photon */
     bool isBremsstrahlung(TVector3 point, int pdg, int motherpdg);
 
+    /* Set debug flag */
+    void SetDebug(bool debug) { _debug = debug; }
+
 protected:
 
 private:
@@ -93,6 +96,7 @@ private:
     std::vector<int>     _Mother;
     std::vector<int>     _PDGMother;
     std::vector<int>     _MCPTrkID;
+    std::vector<float>   _MCPTime;
     std::vector<float>   _MCPStartX;
     std::vector<float>   _MCPStartY;
     std::vector<float>   _MCPStartZ;
@@ -111,6 +115,8 @@ private:
 
     //vector of pdg values where we should keep the daughter
     std::vector<int> daughtersToKeep = {22, 111, 310, 13, 211, 321};
+
+    bool _debug;
 };
 
 #endif /* MCP_SKIMMER_H */
