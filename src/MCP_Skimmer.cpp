@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <map>
 
 MCP_Skimmer::MCP_Skimmer()
 : _outfile(""), _skimfile(nullptr), _skimtree(nullptr), _intfile(nullptr), _inttree(nullptr)
@@ -251,43 +252,128 @@ void MCP_Skimmer::SkimMCParticle()
             _Weight.push_back(Weight->at(i));
         }
 
-        std::vector<int> ToKeep;
+        std::map<int, int> mcp_kid_mother_map;
 
-        //Need to start skimming
-        for(size_t i = 0; i < MCPStartPX->size(); ++i )
+        for(size_t i = 0; i < MCPStartPX->size(); i++ )
         {
-            //Get the creating process
-            std::string mcp_process = MCPProc->at(i);
+            //check if daughter has mother until we find the original mother
+            //get current kid trk id
+            int this_kid_trkid = MCPTrkID->at(i);
+            int this_kid_mother = Mother->at(i);
+            //Mother->at(i) returns the mother trkid
 
-            if(mcp_process == "primary"){
-                _PDG.push_back(PDG->at(i));
-                _MCPStartPX.push_back(MCPStartPX->at(i));
-                _MCPStartPY.push_back(MCPStartPY->at(i));
-                _MCPStartPZ.push_back(MCPStartPZ->at(i));
-                _MCPTrkID.push_back(MCPTrkID->at(i));
-                _MCPStartX.push_back(MCPStartX->at(i));
-                _MCPStartY.push_back(MCPStartY->at(i));
-                _MCPStartZ.push_back(MCPStartZ->at(i));
-                _MCPEndX.push_back(MCPEndX->at(i));
-                _MCPEndY.push_back(MCPEndY->at(i));
-                _MCPEndZ.push_back(MCPEndZ->at(i));
-                _MCPProc.push_back(MCPProc->at(i));
-                _MCPEndProc.push_back(MCPEndProc->at(i));
-                _Mother.push_back(Mother->at(i));
-                _PDGMother.push_back(PDGMother->at(i));
-                //which index to keep
-                ToKeep.push_back(i);
+            //Has no mother -> primaries
+            if(this_kid_mother == 0) {
+                // std::cout << "Kid " << this_kid_trkid << " Mother " << this_kid_mother << std::endl;
+                continue;
+            }
+
+            //loop over the mcp again and go back in history need to check Mother->at(j) until it is 0 then we found the original mcp
+            for(size_t j = 0; j < MCPStartPX->size(); j++ )
+            {
+                int mother_trk_id = MCPTrkID->at(j);
+                int mother = Mother->at(j);
+
+                //found the mother
+                if(mother_trk_id == this_kid_mother)
+                {
+                    //need to check if it has mother if yes loop until mother is 0
+                    if(mother == 0)
+                    {
+                        //found the original particle
+                        // std::cout << "Kid " << this_kid_trkid << " Mother " << this_kid_mother << std::endl;
+                        //fill a map linking kid track id to mother track id to know which ones to skip and replace their mother by the original one
+                        mcp_kid_mother_map[this_kid_trkid] = this_kid_mother;
+                        break;
+                    }
+                    else
+                    {
+                        this_kid_mother = mother;
+                        j = 0;
+                    }
+                }
             }
         }
 
-        //sort by ascending Order
-        std::sort(ToKeep.begin(), ToKeep.end());
+        //Vector of indexes to keep
+        std::vector<int> IndexesToKeep;
 
-        //Fill all trajectories
-        for(int i = 0; i < ToKeep.size(); i++){
+        //Check which indexes to keep
+        for(int i = 0; i < MCPStartPX->size(); i++)
+        {
+            //found a particle that has already an ancestor
+            if( mcp_kid_mother_map.find(MCPTrkID->at(i)) !=  mcp_kid_mother_map.end() )
+            {
+                // However keep the daughters for specific ones
+                // - D0s and V0s (kinks and decays) such as gamma, pi0, K0, muon, pion and kaon
+                // - backscatters from calo to tracker important for background
+                // - breamstrahlung photons / delta rays
+
+                TVector3 spoint(MCPStartX->at(i), MCPStartY->at(i), MCPStartZ->at(i));//start point
+                TVector3 epoint(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));//end point
+                std::string process = MCPProc->at(i);
+
+                //keep D0s and V0s from decays, conversions (a lot of compton or Ioni)
+                if( std::find(daughtersToKeep.begin(), daughtersToKeep.end(), PDGMother->at(i)) != daughtersToKeep.end() && hasOrigininTracker(spoint) && (process == "Decay" || process == "conv") ) {
+                    std::cout << "Keeping D0 or V0" << std::endl;
+                    std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
+                    std::cout << " process " << process << std::endl;
+                    std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
+                    std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
+                    IndexesToKeep.push_back(i);
+                }
+                //check for backscatter
+                else if( isBackscatter(spoint, epoint) ) {
+                    std::cout << "Keeping Backscatter" << std::endl;
+                    std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
+                    std::cout << " process " << process << std::endl;
+                    std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
+                    std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
+                    std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                    IndexesToKeep.push_back(i);
+                }
+                //if breamstrahlung photon
+                else if ( isBreamstrahlung(spoint, PDG->at(i), PDGMother->at(i)) && process == "eBrem" ) {
+                    std::cout << "Keeping Breamstrahlung" << std::endl;
+                    std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
+                    std::cout << " process " << process << std::endl;
+                    std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
+                    std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
+                    std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                    IndexesToKeep.push_back(i);
+                }
+                else {
+                    continue;
+                }
+            }
+
+            //keep only primaries
+            if(MCPProc->at(i) == "primary")
+            IndexesToKeep.push_back(i);
+        }
+
+
+        for(int i = 0; i < IndexesToKeep.size(); i++)
+        {
+            _PDG.push_back(PDG->at(i));
+            _MCPStartPX.push_back(MCPStartPX->at(i));
+            _MCPStartPY.push_back(MCPStartPY->at(i));
+            _MCPStartPZ.push_back(MCPStartPZ->at(i));
+            _MCPTrkID.push_back(MCPTrkID->at(i));
+            _MCPStartX.push_back(MCPStartX->at(i));
+            _MCPStartY.push_back(MCPStartY->at(i));
+            _MCPStartZ.push_back(MCPStartZ->at(i));
+            _MCPEndX.push_back(MCPEndX->at(i));
+            _MCPEndY.push_back(MCPEndY->at(i));
+            _MCPEndZ.push_back(MCPEndZ->at(i));
+            _MCPProc.push_back(MCPProc->at(i));
+            _MCPEndProc.push_back(MCPEndProc->at(i));
+            _Mother.push_back(Mother->at(i));
+            _PDGMother.push_back(PDGMother->at(i));
+
             for(int itraj = 0; itraj < TrajMCPX->size(); itraj++){
                 //keep only traj from kept mcp
-                if(TrajMCPTrajIndex->at(itraj) == ToKeep.at(i)){
+                if(TrajMCPTrajIndex->at(itraj) == i){
                     _TrajMCPX.push_back(TrajMCPX->at(itraj));
                     _TrajMCPY.push_back(TrajMCPY->at(itraj));
                     _TrajMCPZ.push_back(TrajMCPZ->at(itraj));
@@ -400,4 +486,45 @@ void MCP_Skimmer::WriteTTree()
     }
 
     return;
+}
+
+bool MCP_Skimmer::hasOrigininTracker(TVector3 point)
+{
+    //TPC Volume radius 2600 mm
+    //TPC full length 5 m
+    bool hasOrigininTracker = true;
+
+    float r_point = std::sqrt(point.Y()*point.Y() + point.Z()*point.Z());
+    //in the Barrel
+    if( r_point > 260 ) hasOrigininTracker = false;
+    //in the Endcap
+    if(r_point < 260 && std::abs(point.X()) > 250) hasOrigininTracker = false;
+
+    return hasOrigininTracker;
+}
+
+bool MCP_Skimmer::isBackscatter(TVector3 spoint, TVector3 epoint)
+{
+    bool isBackscatter = false;
+
+    //check if started in the calo but made it to the tracker
+    float r_spoint = std::sqrt(spoint.Y()*spoint.Y() + spoint.Z()*spoint.Z());
+    float r_epoint = std::sqrt(epoint.Y()*epoint.Y() + epoint.Z()*epoint.Z());
+
+    //in the Barrel
+    if( r_spoint > 260 && r_epoint < 260 ) isBackscatter = true;
+    //in the Endcap
+    if( (r_spoint < 260 && r_epoint < 260) && ( std::abs(spoint.X()) > 250 && std::abs(epoint.X()) < 250 ) ) isBackscatter = true;
+
+    return isBackscatter;
+}
+
+bool MCP_Skimmer::isBreamstrahlung(TVector3 point, int pdg, int motherpdg)
+{
+    bool isBreamstrahlung = false;
+
+    //Check if it has origin in the tracker and that the pdg is photon and mother is electron/positron (most probable)
+    if(hasOrigininTracker(point) && pdg == 22 && std::abs(motherpdg) == 11) isBreamstrahlung = true;
+
+    return isBreamstrahlung;
 }

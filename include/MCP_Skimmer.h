@@ -5,6 +5,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TVector3.h"
 
 class MCP_Skimmer
 {
@@ -39,6 +40,15 @@ public:
 
     /* Method to clear the event variables */
     void ClearVectors();
+
+    /* Check if MCP started in tracker */
+    bool hasOrigininTracker(TVector3 point);
+
+    /* Check if the mcp is a backscatter */
+    bool isBackscatter(TVector3 spoint, TVector3 epoint);
+
+    /* Check if it is a breamstrahlung photon */
+    bool isBreamstrahlung(TVector3 point, int pdg, int motherpdg);
 
 protected:
 
@@ -95,6 +105,9 @@ private:
     std::vector<float>   _TrajMCPY;
     std::vector<float>   _TrajMCPZ;
     std::vector<int>     _TrajMCPTrajIndex;
+
+    //vector of pdg values where we should keep the daughter
+    std::vector<int> daughtersToKeep = {22, 111, 310, 13, 211, 321};
 };
 
 #endif /* MCP_SKIMMER_H */
