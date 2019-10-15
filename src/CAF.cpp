@@ -406,9 +406,8 @@ void CAF::loop()
         {
             //Get the creating process
             std::string mcp_process = MCPProc->at(i);
-
-            //Need to check what kind of particle?
-            // if(mcp_process != "primary") continue;
+            //Get ending process
+            std::string mcp_endprocess = MCPEndProc->at(i);
 
             nFSP++;
 
@@ -481,6 +480,25 @@ void CAF::loop()
                     float ereco = rando->Gaus( std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass), sigmaNeutronECAL_first );
                     erecon.push_back(ereco > 0 ? ereco : 0.);
                     // std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) << " ereco " << erecon[i] << std::endl;
+                    truepdg.push_back(pdg);
+                    truepx.push_back(MCPStartPX->at(i));
+                    truepy.push_back(MCPStartPY->at(i));
+                    truepz.push_back(MCPStartPZ->at(i));
+                    _MCPStartX.push_back(MCPStartX->at(i));
+                    _MCPStartY.push_back(MCPStartY->at(i));
+                    _MCPStartZ.push_back(MCPStartZ->at(i));
+                    _MCPEndX.push_back(MCPEndX->at(i));
+                    _MCPEndY.push_back(MCPEndY->at(i));
+                    _MCPEndZ.push_back(MCPEndZ->at(i));
+                    mother.push_back(Mother->at(i));
+                    pdgmother.push_back(PDGMother->at(i));
+                    // save the true momentum
+                    truep.push_back(ptrue);
+                    // save the true angle
+                    _angle.push_back(angle);
+                    //Save MC process
+                    _MCProc.push_back(mcp_process);
+                    _MCEndProc.push_back(mcp_endprocess);
                 }
             }
 
@@ -491,12 +509,32 @@ void CAF::loop()
                 float ereco = rando->Gaus( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
                 erecon.push_back(ereco);
                 recopid.push_back(111);
+
+                truepdg.push_back(pdg);
+                truepx.push_back(MCPStartPX->at(i));
+                truepy.push_back(MCPStartPY->at(i));
+                truepz.push_back(MCPStartPZ->at(i));
+                _MCPStartX.push_back(MCPStartX->at(i));
+                _MCPStartY.push_back(MCPStartY->at(i));
+                _MCPStartZ.push_back(MCPStartZ->at(i));
+                _MCPEndX.push_back(MCPEndX->at(i));
+                _MCPEndY.push_back(MCPEndY->at(i));
+                _MCPEndZ.push_back(MCPEndZ->at(i));
+                mother.push_back(Mother->at(i));
+                pdgmother.push_back(PDGMother->at(i));
+                // save the true momentum
+                truep.push_back(ptrue);
+                // save the true angle
+                _angle.push_back(angle);
+                //Save MC process
+                _MCProc.push_back(mcp_process);
+                _MCEndProc.push_back(mcp_endprocess);
             }
 
             //for gammas
             if(pdg == 22)
             {
-                //TODO check if they are not from a pi0 or decayed in the TPC
+                //TODO check if they are not from a pi0 or decayed in the TPC and hit the ECAL!
                 if( PDGMother->at(i) != 111 )
                 {
                     TVector3 point(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
@@ -507,6 +545,26 @@ void CAF::loop()
                         float ereco = rando->Gaus(ptrue, ECAL_resolution);
                         erecon.push_back(ereco);
                         recopid.push_back(22);
+
+                        truepdg.push_back(pdg);
+                        truepx.push_back(MCPStartPX->at(i));
+                        truepy.push_back(MCPStartPY->at(i));
+                        truepz.push_back(MCPStartPZ->at(i));
+                        _MCPStartX.push_back(MCPStartX->at(i));
+                        _MCPStartY.push_back(MCPStartY->at(i));
+                        _MCPStartZ.push_back(MCPStartZ->at(i));
+                        _MCPEndX.push_back(MCPEndX->at(i));
+                        _MCPEndY.push_back(MCPEndY->at(i));
+                        _MCPEndZ.push_back(MCPEndZ->at(i));
+                        mother.push_back(Mother->at(i));
+                        pdgmother.push_back(PDGMother->at(i));
+                        // save the true momentum
+                        truep.push_back(ptrue);
+                        // save the true angle
+                        _angle.push_back(angle);
+                        //Save MC process
+                        _MCProc.push_back(mcp_process);
+                        _MCEndProc.push_back(mcp_endprocess);
                     }
                 }
             }
@@ -536,9 +594,6 @@ void CAF::loop()
                 truep.push_back(ptrue);
                 // save the true angle
                 _angle.push_back(angle);
-
-                //Get ending process
-                std::string mcp_endprocess = MCPEndProc->at(i);
                 //Save MC process
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
