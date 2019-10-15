@@ -301,6 +301,11 @@ void MCP_Skimmer::SkimMCParticle()
         //Check which indexes to keep
         for(int i = 0; i < MCPStartPX->size(); i++)
         {
+            TVector3 spoint(MCPStartX->at(i), MCPStartY->at(i), MCPStartZ->at(i));//start point
+            TVector3 epoint(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));//end point
+            std::string process = MCPProc->at(i);
+            std::string endprocess = MCPEndProc->at(i);
+
             //found a particle that has already an ancestor
             if( mcp_kid_mother_map.find(MCPTrkID->at(i)) !=  mcp_kid_mother_map.end() )
             {
@@ -309,37 +314,37 @@ void MCP_Skimmer::SkimMCParticle()
                 // - backscatters from calo to tracker important for background
                 // - breamstrahlung photons / delta rays
 
-                TVector3 spoint(MCPStartX->at(i), MCPStartY->at(i), MCPStartZ->at(i));//start point
-                TVector3 epoint(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));//end point
-                std::string process = MCPProc->at(i);
-
                 //keep D0s and V0s from decays, conversions (a lot of compton or Ioni)
                 if( std::find(daughtersToKeep.begin(), daughtersToKeep.end(), PDGMother->at(i)) != daughtersToKeep.end() && hasOrigininTracker(spoint) && (process == "Decay" || process == "conv") ) {
                     std::cout << "Keeping D0 or V0" << std::endl;
                     std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
-                    std::cout << " process " << process << std::endl;
+                    std::cout << " process " << process << " endprocess " << endprocess << std::endl;
                     std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
                     std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
+                    std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                    std::cout << " Decayed in Calo " << hasDecayedinCalo(epoint) << std::endl;
                     IndexesToKeep.push_back(i);
                 }
                 //check for backscatter
                 else if( isBackscatter(spoint, epoint) ) {
                     std::cout << "Keeping Backscatter" << std::endl;
                     std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
-                    std::cout << " process " << process << std::endl;
+                    std::cout << " process " << process << " endprocess " << endprocess << std::endl;
                     std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
                     std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
                     std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                    std::cout << " Decayed in Calo " << hasDecayedinCalo(epoint) << std::endl;
                     IndexesToKeep.push_back(i);
                 }
                 //if Bremsstrahlung photon
                 else if ( isBremsstrahlung(spoint, PDG->at(i), PDGMother->at(i)) && process == "eBrem" ) {
                     std::cout << "Keeping Bremsstrahlung" << std::endl;
                     std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
-                    std::cout << " process " << process << std::endl;
+                    std::cout << " process " << process << " endprocess " << endprocess << std::endl;
                     std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
                     std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
                     std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                    std::cout << " Decayed in Calo " << hasDecayedinCalo(epoint) << std::endl;
                     IndexesToKeep.push_back(i);
                 }
                 else {
@@ -348,8 +353,16 @@ void MCP_Skimmer::SkimMCParticle()
             }
 
             //keep only primaries
-            if(MCPProc->at(i) == "primary")
-            IndexesToKeep.push_back(i);
+            if(MCPProc->at(i) == "primary"){
+                std::cout << "Keeping Primary particle" << std::endl;
+                std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
+                std::cout << " process " << process << " endprocess " << endprocess << std::endl;
+                std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
+                std::cout << " End point X: " << epoint.X() << " Y: " << epoint.Y() << " Z: " << epoint.Z() << std::endl;
+                std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
+                std::cout << " Decayed in Calo " << hasDecayedinCalo(epoint) << std::endl;
+                IndexesToKeep.push_back(i);
+            }
         }
 
 
