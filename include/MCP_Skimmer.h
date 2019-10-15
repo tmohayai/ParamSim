@@ -93,6 +93,7 @@ private:
     std::vector<int>     _Mother;
     std::vector<int>     _PDGMother;
     std::vector<int>     _MCPTrkID;
+    std::vector<float>   _MCPTime;
     std::vector<float>   _MCPStartX;
     std::vector<float>   _MCPStartY;
     std::vector<float>   _MCPStartZ;
