@@ -87,6 +87,7 @@ bool CAF::BookTFile()
         //MC Particle info
         cafMVA->Branch("mother", &mother);
         cafMVA->Branch("pdgmother", &pdgmother);
+        cafMVA->Branch("MCPTrkID", &mctrkid);
         cafMVA->Branch("MCPTime", &mctime);
         cafMVA->Branch("MCPStartX", &_MCPStartX);
         cafMVA->Branch("MCPStartY", &_MCPStartY);
@@ -175,6 +176,7 @@ void CAF::ClearVectors()
     pdgmother.clear();
     truepdg.clear();
     mctime.clear();
+    mctrkid.clear();
     _MCPStartX.clear();
     _MCPStartY.clear();
     _MCPStartZ.clear();
@@ -504,6 +506,7 @@ void CAF::loop()
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
                     mctime.push_back(time);
+                    mctrkid.push_back(MCPTrkID->at(i));
                 }
             }
 
@@ -535,6 +538,7 @@ void CAF::loop()
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
                 mctime.push_back(time);
+                mctrkid.push_back(MCPTrkID->at(i));
             }
 
             //for gammas
@@ -572,6 +576,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        mctrkid.push_back(MCPTrkID->at(i));
                     }
                 }
             }
@@ -605,6 +610,7 @@ void CAF::loop()
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
                 mctime.push_back(time);
+                mctrkid.push_back(MCPTrkID->at(i));
 
                 if(isInTPC(point))
                 {

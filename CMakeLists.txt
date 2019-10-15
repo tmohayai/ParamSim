@@ -58,7 +58,7 @@ target_link_libraries(${PROJECT_NAME} ${ROOT_LIBRARIES})
 install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
 
 #skimmer
-add_executable(mcp_skimmer main/test_skimmer.cxx)
+add_executable(mcp_skimmer main/mcp_skimmer.cxx)
 target_link_libraries(mcp_skimmer ${PROJECT_NAME})
 
 #caf module
