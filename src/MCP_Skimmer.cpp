@@ -332,9 +332,9 @@ void MCP_Skimmer::SkimMCParticle()
                     std::cout << " Origin in tracker " << hasOrigininTracker(spoint) << std::endl;
                     IndexesToKeep.push_back(i);
                 }
-                //if breamstrahlung photon
-                else if ( isBreamstrahlung(spoint, PDG->at(i), PDGMother->at(i)) && process == "eBrem" ) {
-                    std::cout << "Keeping Breamstrahlung" << std::endl;
+                //if Bremsstrahlung photon
+                else if ( isBremsstrahlung(spoint, PDG->at(i), PDGMother->at(i)) && process == "eBrem" ) {
+                    std::cout << "Keeping Bremsstrahlung" << std::endl;
                     std::cout << "Index " << i << " TrkID " << MCPTrkID->at(i) << " pdg " << PDG->at(i) << " mother pdg " << PDGMother->at(i);
                     std::cout << " process " << process << std::endl;
                     std::cout << " Start point X: " << spoint.X() << " Y: " << spoint.Y() << " Z: " << spoint.Z() << std::endl;
@@ -503,6 +503,11 @@ bool MCP_Skimmer::hasOrigininTracker(TVector3 point)
     return hasOrigininTracker;
 }
 
+bool MCP_Skimmer::hasDecayedinCalo(TVector3 point)
+{
+    return !hasOrigininTracker(point);
+}
+
 bool MCP_Skimmer::isBackscatter(TVector3 spoint, TVector3 epoint)
 {
     bool isBackscatter = false;
@@ -519,12 +524,12 @@ bool MCP_Skimmer::isBackscatter(TVector3 spoint, TVector3 epoint)
     return isBackscatter;
 }
 
-bool MCP_Skimmer::isBreamstrahlung(TVector3 point, int pdg, int motherpdg)
+bool MCP_Skimmer::isBremsstrahlung(TVector3 point, int pdg, int motherpdg)
 {
-    bool isBreamstrahlung = false;
+    bool isBremsstrahlung = false;
 
     //Check if it has origin in the tracker and that the pdg is photon and mother is electron/positron (most probable)
-    if(hasOrigininTracker(point) && pdg == 22 && std::abs(motherpdg) == 11) isBreamstrahlung = true;
+    if(hasOrigininTracker(point) && pdg == 22 && std::abs(motherpdg) == 11) isBremsstrahlung = true;
 
-    return isBreamstrahlung;
+    return isBremsstrahlung;
 }

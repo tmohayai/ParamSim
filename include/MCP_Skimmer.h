@@ -44,11 +44,14 @@ public:
     /* Check if MCP started in tracker */
     bool hasOrigininTracker(TVector3 point);
 
+    /* Check if MCP decayed in calo */
+    bool hasDecayedinCalo(TVector3 point);
+
     /* Check if the mcp is a backscatter */
     bool isBackscatter(TVector3 spoint, TVector3 epoint);
 
-    /* Check if it is a breamstrahlung photon */
-    bool isBreamstrahlung(TVector3 point, int pdg, int motherpdg);
+    /* Check if it is a Bremsstrahlung photon */
+    bool isBremsstrahlung(TVector3 point, int pdg, int motherpdg);
 
 protected:
 
