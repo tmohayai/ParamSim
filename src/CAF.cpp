@@ -480,7 +480,8 @@ void CAF::loop()
                     //TODO random is first interaction or rescatter and smear accordingly to Chris's study
                     //Detected in the ECAL
                     recopid.push_back(2112);
-                    float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass), sigmaNeutronECAL_first );
+                    float eres = sigmaNeutronECAL_first * std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass);
+                    float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass), eres );
                     erecon.push_back(ereco > 0 ? ereco : 0.);
                     // std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) << " ereco " << erecon[i] << std::endl;
                     truepdg.push_back(pdg);
@@ -495,10 +496,6 @@ void CAF::loop()
                     _MCPEndZ.push_back(MCPEndZ->at(i));
                     mother.push_back(Mother->at(i));
                     pdgmother.push_back(PDGMother->at(i));
-                    // save the true momentum
-                    truep.push_back(ptrue);
-                    // save the true angle
-                    _angle.push_back(angle);
                     //Save MC process
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
@@ -527,10 +524,6 @@ void CAF::loop()
                 _MCPEndZ.push_back(MCPEndZ->at(i));
                 mother.push_back(Mother->at(i));
                 pdgmother.push_back(PDGMother->at(i));
-                // save the true momentum
-                truep.push_back(ptrue);
-                // save the true angle
-                _angle.push_back(angle);
                 //Save MC process
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
@@ -566,10 +559,6 @@ void CAF::loop()
                         _MCPEndZ.push_back(MCPEndZ->at(i));
                         mother.push_back(Mother->at(i));
                         pdgmother.push_back(PDGMother->at(i));
-                        // save the true momentum
-                        truep.push_back(ptrue);
-                        // save the true angle
-                        _angle.push_back(angle);
                         //Save MC process
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
