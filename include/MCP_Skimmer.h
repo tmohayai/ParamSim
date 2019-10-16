@@ -5,7 +5,8 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "TVector3.h"
+
+#include "Utils.h"
 
 class MCP_Skimmer
 {
@@ -41,18 +42,6 @@ public:
     /* Method to clear the event variables */
     void ClearVectors();
 
-    /* Check if MCP started in tracker */
-    bool hasOrigininTracker(TVector3 point);
-
-    /* Check if MCP decayed in calo */
-    bool hasDecayedinCalo(TVector3 point);
-
-    /* Check if the mcp is a backscatter */
-    bool isBackscatter(TVector3 spoint, TVector3 epoint);
-
-    /* Check if it is a Bremsstrahlung photon */
-    bool isBremsstrahlung(TVector3 point, int pdg, int motherpdg);
-
     /* Set debug flag */
     void SetDebug(bool debug) { _debug = debug; }
 
@@ -66,6 +55,10 @@ private:
     std::string _infile;
     TFile* _intfile;
     TTree* _inttree;
+
+    Utils *_util;
+
+    bool _debug;
 
     int           	 _Event;
     int           	 _SubRun;
@@ -115,8 +108,6 @@ private:
 
     //vector of pdg values where we should keep the daughter
     std::vector<int> daughtersToKeep = {22, 111, 310, 13, 211, 321};
-
-    bool _debug;
 };
 
 #endif /* MCP_SKIMMER_H */
