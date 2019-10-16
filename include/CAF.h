@@ -3,7 +3,8 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "TVector3.h"
+
+#include "Utils.h"
 
 class CAF {
 
@@ -41,9 +42,6 @@ public:
     /* Method to loop */
     void loop();
 
-    /* Check if the point is inside the TPC */
-    bool isInTPC(TVector3 &point);
-
 private:
     std::string _outputFile; ///< The output TFile name */
     TFile * cafFile; ///< The output TFile pointer */
@@ -53,6 +51,8 @@ private:
     TFile* _intfile;
     TTree* _inttree;
 
+    Utils *_util;
+
     //Event-wise values
     int _Run, _Event, _SubRun;
     //Generator values
@@ -60,7 +60,7 @@ private:
     std::vector<double> q2, w, y, x, theta, t, mctime, mcnupx, mcnupy, mcnupz, vertx, verty, vertz;
     //MC Particle Values
     std::vector<int> _nFSP;
-    std::vector<int> mctrkid, mother, pdgmother, truepdg, _MCPStartX, _MCPStartY, _MCPStartZ, _MCPEndX, _MCPEndY, _MCPEndZ, _MCPStartPX, _MCPStartPY, _MCPStartPZ;
+    std::vector<int> mctrkid, mother, pdgmother, truepdg, _MCPStartX, _MCPStartY, _MCPStartZ, _MCPEndX, _MCPEndY, _MCPEndZ;
     std::vector<std::string> _MCProc, _MCEndProc;
     std::vector<float> trkLen, trkLenPerp, truep, truepx, truepy, truepz, _angle;
     //Reco values

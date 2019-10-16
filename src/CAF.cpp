@@ -2,6 +2,7 @@
 
 #include "TRandom3.h"
 #include "TVector2.h"
+#include "TVector3.h"
 #include "TLorentzVector.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -19,13 +20,18 @@
 #include <functional>
 
 CAF::CAF()
-: cafFile(nullptr), _outputFile(""), _inputfile(""), _intfile(nullptr), _inttree(nullptr)
+: cafFile(nullptr), _outputFile(""), _inputfile(""), _intfile(nullptr), _inttree(nullptr), _util(new Utils())
 {
 
 }
 
 CAF::CAF( std::string infile, std::string filename )
-: cafFile(nullptr), _outputFile(filename), _inputfile(infile), _intfile(nullptr), _inttree(nullptr)
+: cafFile(nullptr), _outputFile(filename), _inputfile(infile), _intfile(nullptr), _inttree(nullptr), _util(new Utils())
+{
+
+}
+
+CAF::~CAF()
 {
 
 }
@@ -92,9 +98,9 @@ bool CAF::BookTFile()
         cafMVA->Branch("MCPStartX", &_MCPStartX);
         cafMVA->Branch("MCPStartY", &_MCPStartY);
         cafMVA->Branch("MCPStartZ", &_MCPStartZ);
-        cafMVA->Branch("MCPStartPX", &_MCPStartPX);
-        cafMVA->Branch("MCPStartPY", &_MCPStartPY);
-        cafMVA->Branch("MCPStartPZ", &_MCPStartPZ);
+        cafMVA->Branch("truepx", &truepx);
+        cafMVA->Branch("truepy", &truepy);
+        cafMVA->Branch("truepz", &truepz);
         cafMVA->Branch("MCPEndX", &_MCPEndX);
         cafMVA->Branch("MCPEndY", &_MCPEndY);
         cafMVA->Branch("MCPEndZ", &_MCPEndZ);
@@ -183,9 +189,6 @@ void CAF::ClearVectors()
     _MCPEndX.clear();
     _MCPEndY.clear();
     _MCPEndZ.clear();
-    _MCPStartPX.clear();
-    _MCPStartPY.clear();
-    _MCPStartPZ.clear();
     _MCProc.clear();
     _MCEndProc.clear();
     trkLen.clear();
@@ -217,21 +220,14 @@ void CAF::loop()
 
     //Resolution for short tracks //TODO check this numbers!
     float sigmaP_short = 0.1; //in GeV
-    float sigma_angle_short = 0.01; //in radian
-
     // point resolution
     float sigma_x = 0.1;
-
-    int seed = 7;
-    TRandom3 *rando = new TRandom3( seed );
 
     std::vector<float> v = std::vector<float>();
     for (float pit = 0.040; pit < 20.0; pit += 0.001)
     {
         v.push_back(pit);
     }
-
-    TRandom *R = new TRandom(time(0));
 
     //TODO as function of momentum
     float NeutronECAL_detEff = 0.4;
@@ -440,7 +436,8 @@ void CAF::loop()
                     //Traj point+1
                     TVector3 point(TrajMCPX->at(itraj), TrajMCPY->at(itraj), TrajMCPZ->at(itraj));
                     //point is not in the TPC anymore - stop traj loop
-                    if(not isInTPC(point)){
+                    if(not _util->hasOriginInTracker(point))
+                    {
                         // std::cout << "Point not within the TPC: " << point.X() << " r " << std::sqrt(point.Y()*point.Y() + point.Z()*point.Z()) << std::endl;
                         continue;
                     }
@@ -470,20 +467,21 @@ void CAF::loop()
             float mctrackid = MCPTrkID->at(i);
             // angle with respect to the incoming neutrino
             float angle  = atan(mcp.X() / mcp.Z());
-            float time = rando->Gaus(MCPTime->at(i), ECAL_time_resolution);
+            float time = _util->GaussianSmearing(MCPTime->at(i), ECAL_time_resolution);
 
             //for neutrons
             if(pdg == 2112)
             {
                 //check if it can be detected by the ECAL
                 //Assumes 40% efficiency to detect
-                float random_number = R->Rndm();
+                float random_number = _util->GetRamdomNumber();
                 if(random_number >= NeutronECAL_detEff)
                 {
-                    //TODO random is first interaction of rescatter and smear accordingly to Chris's study
+                    //TODO random is first interaction or rescatter and smear accordingly to Chris's study
                     //Detected in the ECAL
                     recopid.push_back(2112);
-                    float ereco = rando->Gaus( std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass), sigmaNeutronECAL_first );
+                    float eres = sigmaNeutronECAL_first * std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass);
+                    float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass), eres );
                     erecon.push_back(ereco > 0 ? ereco : 0.);
                     // std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) << " ereco " << erecon[i] << std::endl;
                     truepdg.push_back(pdg);
@@ -498,10 +496,6 @@ void CAF::loop()
                     _MCPEndZ.push_back(MCPEndZ->at(i));
                     mother.push_back(Mother->at(i));
                     pdgmother.push_back(PDGMother->at(i));
-                    // save the true momentum
-                    truep.push_back(ptrue);
-                    // save the true angle
-                    _angle.push_back(angle);
                     //Save MC process
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
@@ -514,7 +508,7 @@ void CAF::loop()
             if(pdg == 111)
             {
                 //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
-                float ereco = rando->Gaus( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
+                float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
                 erecon.push_back(ereco);
                 recopid.push_back(111);
 
@@ -530,10 +524,6 @@ void CAF::loop()
                 _MCPEndZ.push_back(MCPEndZ->at(i));
                 mother.push_back(Mother->at(i));
                 pdgmother.push_back(PDGMother->at(i));
-                // save the true momentum
-                truep.push_back(ptrue);
-                // save the true angle
-                _angle.push_back(angle);
                 //Save MC process
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
@@ -547,12 +537,13 @@ void CAF::loop()
                 //TODO check if they are not from a pi0 or decayed in the TPC and hit the ECAL!
                 if( PDGMother->at(i) != 111 )
                 {
-                    TVector3 point(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
+                    TVector3 epoint(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
                     //Endpoint is not in the TPC
-                    if(not isInTPC(point)){
+                    if(not _util->hasOriginInTracker(epoint))
+                    {
                         //if they hit the ECAL and smear their energy
                         float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
-                        float ereco = rando->Gaus(ptrue, ECAL_resolution);
+                        float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
                         erecon.push_back(ereco);
                         recopid.push_back(22);
 
@@ -568,10 +559,6 @@ void CAF::loop()
                         _MCPEndZ.push_back(MCPEndZ->at(i));
                         mother.push_back(Mother->at(i));
                         pdgmother.push_back(PDGMother->at(i));
-                        // save the true momentum
-                        truep.push_back(ptrue);
-                        // save the true angle
-                        _angle.push_back(angle);
                         //Save MC process
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
@@ -587,7 +574,7 @@ void CAF::loop()
                 //Use range instead of Gluckstern for stopping tracks
                 //TODO is that correct? What if it is a scatter in the TPC? Need to check if daughter is same particle
                 float preco = 0;
-                TVector3 point(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
+                TVector3 epoint(MCPEndX->at(i), MCPEndY->at(i), MCPEndZ->at(i));
 
                 // save the true PDG, parametrized PID comes later
                 truepdg.push_back(pdg);
@@ -612,14 +599,28 @@ void CAF::loop()
                 mctime.push_back(time);
                 mctrkid.push_back(MCPTrkID->at(i));
 
-                if(isInTPC(point))
+                //Case for range, the end point of the mcp is in the tracker
+                if( _util->hasOriginInTracker(epoint) )
                 {
-                    preco = rando->Gaus( ptrue, sigmaP_short );
-                    float angle_reco = rando->Gaus(angle, sigma_angle_short);
+                    // calculate number of trackpoints
+                    float nHits = round (trkLen.at(i) / gastpc_padPitch);
+                    // angular resolution first term
+                    float sigma_angle_1 = ((sigma_x * sigma_x * 0.0001) / trkLen.at(i)*trkLen.at(i)*0.0001) * (12*(nHits-1))/(nHits*(nHits+1));
+                    // scattering term in Gluckstern formula
+                    float sigma_angle_2 = (0.015*0.015 / (3. * ptrue * ptrue)) * (trkLen.at(i)/gastpc_X0);
+                    // angular resolution from the two terms above
+                    float sigma_angle_short = sqrt(sigma_angle_1 + sigma_angle_2);
+                    //reconstructed angle
+                    float angle_reco = _util->GaussianSmearing(angle, sigma_angle_short);
+                    //reconstructed momentum
+                    preco = _util->GaussianSmearing( ptrue, sigmaP_short );
+
                     _preco.push_back(preco);
                     anglereco.push_back(angle_reco);
                 }
                 else{
+                    //Case where the endpoint is not in the tracker, should be able to use the Gluckstern formula
+
                     // calculate number of trackpoints
                     float nHits = round (trkLen.at(i) / gastpc_padPitch);
                     // measurement term in Gluckstern formula
@@ -629,7 +630,7 @@ void CAF::loop()
                     // momentum resoltion from the two terms above
                     float sigmaP = ptrue * sqrt( fracSig_meas*fracSig_meas + fracSig_MCS*fracSig_MCS );
                     // now Gaussian smear the true momentum using the momentum resolution
-                    preco = rando->Gaus( ptrue, sigmaP );
+                    preco = _util->GaussianSmearing( ptrue, sigmaP );
 
                     // measurement term in the Gluckstern formula for calculating the
                     // angular resolution
@@ -639,7 +640,7 @@ void CAF::loop()
                     // angular resolution from the two terms above
                     float sigma_angle = sqrt(sigma_angle_1 + sigma_angle_2);
                     // now Gaussian smear the true angle using the angular resolution
-                    float angle_reco = rando->Gaus(angle, sigma_angle);
+                    float angle_reco = _util->GaussianSmearing(angle, sigma_angle);
 
                     // save reconstructed momentum and angle to cafanatree
                     _preco.push_back(preco);
@@ -728,7 +729,7 @@ void CAF::loop()
                                 //Order the vector of prob
                                 std::sort(v_prob.begin(), v_prob.end());
                                 //Throw a random number between 0 and 1
-                                float random_number = R->Rndm();
+                                float random_number = _util->GetRamdomNumber();
                                 //Make cumulative sum to get the range
                                 std::partial_sum(v_prob.begin(), v_prob.end(), v_prob.begin(), [](const P& _x, const P& _y){return P(_x.first + _y.first, _y.second);});
                                 // std::cout << "rand " << random_number << std::endl;
@@ -759,18 +760,3 @@ void CAF::loop()
 
     } // closes the event loop
 } // closes the main loop function
-
-bool CAF::isInTPC(TVector3 &point)
-{
-    //TPC Volume radius 2600 mm
-    //TPC full length 5 m
-    bool isInside = true;
-    float r_point = std::sqrt(point.Y()*point.Y() + point.Z()*point.Z());
-
-    //in the Barrel
-    if( r_point > 260 ) isInside = false;
-    //in the Endcap
-    if(r_point < 260 && std::abs(point.X()) > 250) isInside = false;
-
-    return isInside;
-}
