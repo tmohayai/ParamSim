@@ -75,7 +75,6 @@ private:
     int _Run, _Event, _SubRun;
 
     //Generator values
-
     std::vector<int> mode, ccnc, ntype, gint, weight, tgtpdg, gt_t, intert, detected;
 
     std::vector<double> q2, w, y, x, theta, t, mctime, mcnupx, mcnupy, mcnupz, vertx, verty, vertz;
@@ -99,4 +98,3 @@ private:
 };
 
 #endif
-
