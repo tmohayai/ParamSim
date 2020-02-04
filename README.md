@@ -47,14 +47,52 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * intert: interaction type 
 
-  * mcnupx: x-component momentum of neutrino
+  * mcnupx: x-component momentum of neutrino in GeV/c
 
-  * mcnupy: y-component momentum of neutrino
+  * mcnupy: y-component momentum of neutrino in GeV/c
 
-  * mcnupz: z-component momentum of neutrino
+  * mcnupz: z-component momentum of neutrino in GeV/c
 
-  * vertx: vertex of primary mc particle in x
+  * vertx: vertex of primary mc particle in x in cm
 
-  * verty: vertex of primary mc particle in y
+  * verty: vertex of primary mc particle in y in cm 
 
-  * vertz: vertex of primary mc particle in z
+  * vertz: vertex of primary mc particle in z in cm
+  
+- GEANT4-level information: 
+
+ * nFSP: number of final state (primary) particles that emerge from the neutrino interaction vertex
+ 
+ * pdgmother: pdg code of the particle that created the particle under consideration
+ 
+ * mctrkid: track number of the particle that created the track under study
+
+ * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
+
+ * MCPStartX: starting position of the particle along the x-direction (starting position of the track) in cm 
+
+ * MCPStartY: starting position of the particle along the y-direction (starting position of the track) in cm 
+
+ * MCPStartZ: starting position of the particle along the z-direction (starting position of the track) in cm
+
+ * truepx: truth-level x-component momentum of the particle in GeV/c
+ 
+ * truepy: truth-level y-component momentum of the particle in GeV/c
+
+ * truepz: truth-level z-component momentum of the particle in GeV/c
+
+ * MCPEndX: end position of the particle along the x-direction (end position of the track) in cm 
+
+ * MCPEndY: end position of the particle along the y-direction (end position of the track) in cm 
+
+ * MCPEndZ: end position of the particle along the z-direction (end position of the track) in cm 
+
+ * MCProc: a vector containing a string of the GEANT4 process that created a particle (e.g. for particles emerging from a neutrino interacion, the GEANT4 process is "primary")
+
+ * MCEndProc: a vector containing a string of the GEANT4 end process of a particle (e.g. for e+e- pairs emerging from a photon conversion, the end process is "conv")
+
+ * angle: truth-level angle with respect to the beam direction (along the z) 
+ 
+ * truep: truth-level momentum of the particle in GeV/c
+
+ * truepdg: truth-level PDG code of the particle 
