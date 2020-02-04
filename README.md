@@ -96,3 +96,19 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * truep: truth-level momentum of the particle in GeV/c
 
   * truepdg: truth-level PDG code of the particle 
+  
+- Reconstruction-level information (note that this is different from GArSoft reconstruction -- see above for more information about the parametrized reconstruction in the ParamSim module): 
+
+  * recopid: reconstructed PDG code of the particle using the parametrized dE/dx
+
+  * trkLen: length of the track
+
+  * trkLenPerp: length of the track in the direction transverse to the beam 
+
+  * preco: reconstructed particle momentum 
+
+  * anglereco: reconstructed angle of the particle with respect to the beam direction (wrt the z-direction) 
+
+  * erecon: reconstructed energy (so far only contains neutral particle energy reconstruction using ECAL) 
+
+  * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles 
