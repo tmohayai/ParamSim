@@ -1,6 +1,6 @@
 # ParamSim
 
-The parametrized simulation is currently a module in GArSoft v02_04_00 and is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation and analysis software framework. v02_04_00 of GArSoft is the version tagged for CDR studies. 
+The parametrized simulation is currently a module in GArSoft v02_04_00 and is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki) and analysis software framework. v02_04_00 of GArSoft is the version tagged for CDR studies. 
 
 Two reconstruction approaches are taken to parametrize the detector response: 
 
