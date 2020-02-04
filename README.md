@@ -61,38 +61,38 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   
 - GEANT4-level information: 
 
- * nFSP: number of final state (primary) particles that emerge from the neutrino interaction vertex
+  * nFSP: number of final state (primary) particles that emerge from the neutrino interaction vertex
  
- * pdgmother: pdg code of the particle that created the particle under consideration
+  * pdgmother: pdg code of the particle that created the particle under consideration
  
- * mctrkid: track number of the particle that created the track under study
+  * mctrkid: track number of the particle that created the track under study
 
- * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
+  * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
 
- * MCPStartX: starting position of the particle along the x-direction (starting position of the track) in cm 
+  * MCPStartX: starting position of the particle along the x-direction (starting position of the track) in cm 
 
- * MCPStartY: starting position of the particle along the y-direction (starting position of the track) in cm 
+  * MCPStartY: starting position of the particle along the y-direction (starting position of the track) in cm 
 
- * MCPStartZ: starting position of the particle along the z-direction (starting position of the track) in cm
+  * MCPStartZ: starting position of the particle along the z-direction (starting position of the track) in cm
 
- * truepx: truth-level x-component momentum of the particle in GeV/c
+  * truepx: truth-level x-component momentum of the particle in GeV/c
  
- * truepy: truth-level y-component momentum of the particle in GeV/c
+  * truepy: truth-level y-component momentum of the particle in GeV/c
 
- * truepz: truth-level z-component momentum of the particle in GeV/c
+  * truepz: truth-level z-component momentum of the particle in GeV/c
 
- * MCPEndX: end position of the particle along the x-direction (end position of the track) in cm 
+  * MCPEndX: end position of the particle along the x-direction (end position of the track) in cm 
 
- * MCPEndY: end position of the particle along the y-direction (end position of the track) in cm 
+  * MCPEndY: end position of the particle along the y-direction (end position of the track) in cm 
 
- * MCPEndZ: end position of the particle along the z-direction (end position of the track) in cm 
+  * MCPEndZ: end position of the particle along the z-direction (end position of the track) in cm 
 
- * MCProc: a vector containing a string of the GEANT4 process that created a particle (e.g. for particles emerging from a neutrino interacion, the GEANT4 process is "primary")
+  * MCProc: a vector containing a string of the GEANT4 process that created a particle (e.g. for particles emerging from a neutrino interacion, the GEANT4 process is "primary")
 
- * MCEndProc: a vector containing a string of the GEANT4 end process of a particle (e.g. for e+e- pairs emerging from a photon conversion, the end process is "conv")
+  * MCEndProc: a vector containing a string of the GEANT4 end process of a particle (e.g. for e+e- pairs emerging from a photon conversion, the end process is "conv")
 
- * angle: truth-level angle with respect to the beam direction (along the z) 
+  * angle: truth-level angle with respect to the beam direction (along the z) 
  
- * truep: truth-level momentum of the particle in GeV/c
+  * truep: truth-level momentum of the particle in GeV/c
 
- * truepdg: truth-level PDG code of the particle 
+  * truepdg: truth-level PDG code of the particle 
