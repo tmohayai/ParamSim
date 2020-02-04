@@ -5,7 +5,7 @@ The parametrized simulation is currently a module in GArSoft v02_04_00 and is co
 Following is the reconstruction approach taken to parametrize the detector response: 
 
 1) Gluckstern relation (https://www.sciencedirect.com/science/article/pii/S0168900209009474) for reconstructing long tracks curling up in magnetic field  
-2) Particle range for reconstructing short tracks that stop in the High pressure gas argon TPC component of the MPD and do not curking up in magnetic field
+2) Particle range for reconstructing short tracks that stop in the high pressure gas argon TPC (HPgTPC) component of the MPD and do not curking up in magnetic field
 
 In addition to reconstructing tracks, a dE/dx-based PID is implemented in the module. This is based on Tom Junk's parametrization of PEP-4's dE/dx curve: https://home.fnal.gov/~trj/mpd/dedx_sep2019/ (PID matrices are in pid.root file)
 
