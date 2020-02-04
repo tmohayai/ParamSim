@@ -2,7 +2,7 @@
 
 The parametrized simulation is currently a module in GArSoft v02_04_00 and is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation and analysis software framework (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki), and v02_04_00 of GArSoft is the version tagged for CDR studies. 
 
-Two reconstruction approaches are taken to parametrize the detector response: 
+Following is the reconstruction approache taken to parametrize the detector response: 
 
 1) Gluckstern relation (https://www.sciencedirect.com/science/article/pii/S0168900209009474) for reconstructing long tracks curling up in magnetic field  
 2) Particle range for reconstructing short tracks that stop in the High pressure gas argon TPC component of the MPD and do not curking up in magnetic field
