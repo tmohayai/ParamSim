@@ -10,9 +10,9 @@ void checkmuons()
     //     chain->Add(filename);
     // }
 
-    // to read over a number of cafanatree files, un-comment lines 14, 15, 66 and comment out line 17
-    //for( int i = 0; i <= 1; ++i ) {
-    //chain->Add( Form("/pnfs/dune/persistent/users/afurmans/dirtProcessingOct2019/output/gasOnly/cafanatree_%d.root",i) );
+    // to read over a number of cafanatree files, un-comment lines 14, 15, 66 and comment out line 111
+    // for( int i = 0; i <= 20; ++i ) {
+    // chain->Add( Form("/pnfs/dune/persistent/users/afurmans/dirtProcessingOct2019/output/gasOnly/run_0/cafanatree_%d.root",i) );
     
     chain->Add("../caf.root");
 
@@ -55,7 +55,8 @@ void checkmuons()
         for(int i = 0; i < truep->size(); i++)
         {
             //Muons
-            if( std::abs(truepdg->at(i)) == 13 && std::abs(recopid->at(i)) == 13){
+            // add "&& std::abs(recopid->at(i)) == 13" to the if statement in line 59 if interested in reconstructed muons
+            if( std::abs(truepdg->at(i)) == 13 ){
                 hPullMomentum->Fill( (truep->at(i) - preco->at(i)) / truep->at(i) );
                 hMomemtumTruevsReco->Fill(truep->at(i), preco->at(i));
                 hPullAngle->Fill( (angle->at(i) - anglereco->at(i)) / angle->at(i) );
@@ -63,7 +64,7 @@ void checkmuons()
             }
         }
       }
-    //}
+  
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1);
     hPullMomentum->Scale(1./hPullMomentum->Integral());
@@ -107,5 +108,5 @@ void checkmuons()
     // hPullNeutrons->GetYaxis()->SetTitle( "Normalized Events" );
     // hPullNeutrons->Draw("hist");
     // c5->SaveAs("PullEnergyNeutrons.pdf");
-
-}
+    }
+//}
