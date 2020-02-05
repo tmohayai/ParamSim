@@ -112,3 +112,5 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * erecon: reconstructed energy (so far only contains neutral particle energy reconstruction using ECAL) 
 
   * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles 
+  
+Check out the test directory for an example macro on how to read the cafanatree analysis ntuples that are produced as outputs of running the ParamSim module.   
