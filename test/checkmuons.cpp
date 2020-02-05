@@ -10,6 +10,10 @@ void checkmuons()
     //     chain->Add(filename);
     // }
 
+    // to read over a number of cafanatree files, un-comment lines 14, 15, 66 and comment out line 17
+    //for( int i = 0; i <= 1; ++i ) {
+    //chain->Add( Form("/pnfs/dune/persistent/users/afurmans/dirtProcessingOct2019/output/gasOnly/cafanatree_%d.root",i) );
+    
     chain->Add("../caf.root");
 
     std::vector<float> *truep = 0;
@@ -58,8 +62,8 @@ void checkmuons()
                 hAngleTruevsReco->Fill(angle->at(i), anglereco->at(i));
             }
         }
-    }
-
+      }
+    //}
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1);
     hPullMomentum->Scale(1./hPullMomentum->Integral());
