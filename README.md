@@ -61,7 +61,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   
 - GEANT4-level information: 
 
-  * nFSP: number of final state (primary) particles that emerge from the neutrino interaction vertex
+  * nFSP: number of mc particles -- note that this variable is not limited to "primary" mc particles that emerge from the neutrino interaction vertices, rather it includes all mc particles
  
   * pdgmother: pdg code of the particle that created the particle under consideration
  
