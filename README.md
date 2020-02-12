@@ -9,6 +9,11 @@ Following is the reconstruction approach taken to parametrize the detector respo
 
 In addition to reconstructing tracks, a dE/dx-based PID is implemented in the module. This is based on Tom Junk's parametrization of PEP-4's dE/dx curve: https://home.fnal.gov/~trj/mpd/dedx_sep2019/ (PID matrices are in pid.root file)
 
+Assuming that the radial coordinates are calculated from r = sqrt(Y^2 + Z^2), a particle is in the TPC fiducial volume if it makes it through the following fiducial volume cut: 
+if ( r < 222.5 && abs(x) < 215 ) 
+where the values of r and x are in cm.
+In addition, a particle would be in the ECAL barrel, if r > 260 and is in the ECAL end caps if (r < 260 && abs(x) > 250).
+
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following: 
 
 * Event: an art event (not neutrino-interaction event)
