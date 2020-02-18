@@ -24,7 +24,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
 - Generator-level information (more information about generator-level variables can be found at: https://internal.dunescience.org/doxygen/classsimb_1_1MCNeutrino.html)
 
-  * mode: running mode (neutrino vs. anti-neutrino)
+  * mode: interaction mode
 
   * q2: momentum transfer
 
