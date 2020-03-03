@@ -20,6 +20,9 @@ public:
     /* Set the seed */
     void SetSeed(int seed);
 
+    /* Set the origin */
+    void SetOrigin(double *origin);
+
     /* Check if MCP started in tracker */
     bool hasOriginInTracker(TVector3 spoint);
 
@@ -36,10 +39,12 @@ public:
 
     float GaussianSmearing(float mean, float sigma) { return _rando->Gaus(mean, sigma); }
 
+    double* GetOrigin() { return &_origin[0]; }
+
 private:
+    double _origin[3];                   ///< coordinates of the origin
     unsigned long int _seed;         ///< seed
     TRandom3 *_rando;                ///< random generator
 };
 
 #endif
-
