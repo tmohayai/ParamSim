@@ -108,4 +108,3 @@ private:
 };
 
 #endif /* MCP_SKIMMER_H */
-
