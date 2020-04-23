@@ -61,7 +61,7 @@ private:
     //Generator values
     std::vector<int> mode, ccnc, ntype, gint, weight, tgtpdg, gt_t, intert, detected;
     std::vector<double> q2, w, y, x, theta, t, mctime, mcnupx, mcnupy, mcnupz, vertx, verty, vertz;
-    //MC Particle Values
+    //MC Particle Values, with motherid added
     std::vector<int> _nFSP;
     std::vector<int> mctrkid, motherid, pdgmother, truepdg, _MCPStartX, _MCPStartY, _MCPStartZ, _MCPEndX, _MCPEndY, _MCPEndZ;
     std::vector<std::string> _MCProc, _MCEndProc;
