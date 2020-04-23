@@ -71,6 +71,8 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * pdgmother: pdg code of the particle that created the particle under consideration
  
   * mctrkid: track number of the particle that created the track under study
+  
+  * motherid: id number associated with the mother mc particle
 
   * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
 
