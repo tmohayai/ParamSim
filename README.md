@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ebrianne/ParamSim.svg?branch=master)](https://travis-ci.org/ebrianne/ParamSim)
 
-The parametrized simulation is currently a module in GArSoft v02_04_00 and GArSoft development branch is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation, reconstruction, and analysis software framework (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki), and v02_04_00 of GArSoft is the version tagged for DUNE near detector Conceptual Design Report. In GArSoft development branch, you may find this module under the Ana/ParamSim directory. 
+The parametrized simulation, currently a module in GArSoft v02_04_00 and GArSoft development branch is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation, reconstruction, and analysis software framework (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki), and v02_04_00 of GArSoft is the version tagged for DUNE near detector Conceptual Design Report. In GArSoft development branch, you may find this module under the Ana/ParamSim directory. 
 
 Following is the reconstruction approach taken to parametrize the detector response:
 
