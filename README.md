@@ -118,8 +118,12 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * anglereco: reconstructed angle of the particle with respect to the beam direction (wrt the z-direction)
 
-  * erecon: reconstructed energy (so far only contains neutral particle energy reconstruction using ECAL)
+  * erecon: reconstructed energy of neutral particles that reach the ECAL (when track length != 0 and endpoint is not in the tracker). Particles that are not reconstructed in the ECAL have erecon of 0.
 
   * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles
+  
+  * recopidecal: reconstructed PDG code of the neutral and charged particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL.
+
+recopidecal: reconstructed PDG code of the neutral particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL or if it is not a neutral particle.
 
 Check out the test directory for an example macro on how to read the cafanatree analysis ntuples that are produced as outputs of running the ParamSim module.   
