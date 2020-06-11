@@ -11,10 +11,23 @@ Following is the reconstruction approach taken to parametrize the detector respo
 
 In addition to reconstructing tracks, a dE/dx-based PID is implemented in the module. This is based on Tom Junk's parametrization of PEP-4's dE/dx curve: https://home.fnal.gov/~trj/mpd/dedx_sep2019/ (PID matrices are in pid.root file)
 
+**Hardcoded values!!**
+
+```C++
+  double _TPCFidRadius = 222.5;
+  double _TPCFidLength = 215.;
+  double _TPCRadius = 273.;
+  double _TPCLength = 259.;
+  double _ECALInnerRadius = 278.;
+  double _ECALOuterRadius = 321.;
+  double _ECALStartX = 364.;
+  double _ECALEndX = 406.;
+```
+
 Assuming that the radial coordinates are calculated from r = sqrt(Y^2 + Z^2), a particle is in the TPC fiducial volume if it makes it through the following fiducial volume cut:
 if ( r < 222.5 && abs(x) < 215 )
 where the values of r and x are in cm.
-In addition, a particle would be in the ECAL barrel, if r > 260 and is in the ECAL end caps if (r < 260 && abs(x) > 375).
+In addition, a particle would be in the ECAL barrel, if r > 278 and is in the ECAL end caps if (r < 278 && abs(x) > 364).
 
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following:
 
@@ -127,6 +140,16 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * detected: whether the particle is seen by the ECAL
 
   * etime: smeared mc time by 1 ns, reco by the ECAL (if reaches or seen in ECAL only)
+
+- Geometry information (simple flags 0 or 1)
+
+  * isFidStart/End: Check if the particle start/end point is in the fiducial volume of the TPC
+
+  * isTPCStart/End: Check if the particle start/end point is in the volume of the TPC (includes fiducial and out of fiducial)
+
+  * isCaloStart/End: Check if the particle start/end point is in the ECAL
+
+  * isThroughCaloStart/End: Check if the particle start/end point is not in the TPC and the ECAL (assumes went through the ECAL)
 
 recopidecal: reconstructed PDG code of the neutral particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL or if it is not a neutral particle.
 

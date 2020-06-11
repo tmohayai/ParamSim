@@ -519,11 +519,12 @@ void CAF::loop()
             TVector3 spoint(MCPStartX->at(i)- _util->GetOrigin()[0], MCPStartY->at(i)- _util->GetOrigin()[1], MCPStartZ->at(i)- _util->GetOrigin()[2]);
             TVector3 epoint(MCPEndX->at(i)- _util->GetOrigin()[0], MCPEndY->at(i)- _util->GetOrigin()[1], MCPEndZ->at(i)- _util->GetOrigin()[2]);
 
+            //Check where start point is for the mcp
             isFidStart.push_back(_util->PointInFiducial(spoint));
             isTPCStart.push_back(_util->PointInTPC(spoint));
             isCaloStart.push_back(_util->PointInCalo(spoint));
             isThroughCaloStart.push_back(_util->isThroughCalo(spoint));
-
+            //Check where endpoint of mcp is
             isFidEnd.push_back(_util->PointInFiducial(epoint));
             isTPCEnd.push_back(_util->PointInTPC(epoint));
             isCaloEnd.push_back(_util->PointInCalo(epoint));
