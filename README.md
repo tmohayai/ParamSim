@@ -11,6 +11,8 @@ Following is the reconstruction approach taken to parametrize the detector respo
 
 In addition to reconstructing tracks, a dE/dx-based PID is implemented in the module. This is based on Tom Junk's parametrization of PEP-4's dE/dx curve: https://home.fnal.gov/~trj/mpd/dedx_sep2019/ (PID matrices are in pid.root file)
 
+*Units are in cm, GeV, ns.*
+
 **Hardcoded values!!**
 
 ```C++
@@ -24,10 +26,52 @@ In addition to reconstructing tracks, a dE/dx-based PID is implemented in the mo
   double _ECALEndX = 406.;
 ```
 
-Assuming that the radial coordinates are calculated from r = sqrt(Y^2 + Z^2), a particle is in the TPC fiducial volume if it makes it through the following fiducial volume cut:
-if ( r < 222.5 && abs(x) < 215 )
-where the values of r and x are in cm.
-In addition, a particle would be in the ECAL barrel, if r > 278 and is in the ECAL end caps if (r < 278 && abs(x) > 364).
+The volumes are defined as the following:
+
+```C++
+bool Utils::PointInFiducial(TVector3 point)
+{
+    bool isInFiducial = true;
+
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    if( r_point > _TPCFidRadius ) isInFiducial = false;
+    if( r_point < _TPCFidRadius && std::abs(point.X()) > _TPCFidLength ) isInFiducial = false;
+
+    return isInFiducial;
+}
+```
+```C++
+bool Utils::PointInTPC(TVector3 point)
+{
+    if(PointInFiducial(point)) return true;
+    bool isInTPC = true;
+
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    if( r_point > _TPCRadius ) isInTPC = false;
+    if( r_point < _TPCRadius && std::abs(point.X()) > _TPCLength ) isInTPC = false;
+
+    return isInTPC;
+}
+```
+```C++
+bool Utils::PointInCalo(TVector3 point)
+{
+    bool isInCalo = false;
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    //in the Barrel
+    if( r_point > _ECALInnerRadius && r_point < _ECALOuterRadius && std::abs(point.X()) < _ECALStartX ) isInCalo = true;
+    //in the Endcap
+    if( r_point < _ECALInnerRadius && std::abs(point.X()) > _ECALStartX && std::abs(point.X()) < _ECALEndX ) isInCalo = true;
+
+    return isInCalo;
+}
+```
+```C++
+bool Utils::isThroughCalo(TVector3 point)
+{
+    return !PointInTPC(point) && !PointInCalo(point);
+}
+```
 
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following:
 
