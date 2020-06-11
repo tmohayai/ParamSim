@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ebrianne/ParamSim.svg?branch=master)](https://travis-ci.org/ebrianne/ParamSim)
 
-The parametrized simulation, currently a module in GArSoft v02_04_00 and GArSoft development branch is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation, reconstruction, and analysis software framework (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki), and v02_04_00 of GArSoft is the version tagged for DUNE near detector Conceptual Design Report. In GArSoft development branch, you may find this module under the Ana/ParamSim directory. 
+The parametrized simulation, currently a module in GArSoft v02_04_00 and GArSoft development branch is complementary to GArSoft's full reconstruction approach. GArSoft is Multipurpose Detector's (MPD) official simulation, reconstruction, and analysis software framework (https://cdcvs.fnal.gov/redmine/projects/garsoft/wiki), and v02_04_00 of GArSoft is the version tagged for DUNE near detector Conceptual Design Report. In GArSoft development branch, you may find this module under the Ana/ParamSim directory.
 
 Following is the reconstruction approach taken to parametrize the detector response:
 
@@ -73,7 +73,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * pdgmother: pdg code of the particle that created the particle under consideration
 
   * mctrkid: track number of the particle that created the track under study
-  
+
   * motherid: id number associated with the mother mc particle
 
   * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
@@ -121,8 +121,12 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * erecon: reconstructed energy of neutral particles that reach the ECAL (when track length != 0 and endpoint is not in the tracker). Particles that are not reconstructed in the ECAL have erecon of 0.
 
   * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles
-  
+
   * recopidecal: reconstructed PDG code of the neutral and charged particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL.
+
+  * detected: whether the particle is seen by the ECAL
+
+  * etime: smeared mc time by 1 ns, reco by the ECAL (if reaches or seen in ECAL only)
 
 recopidecal: reconstructed PDG code of the neutral particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL or if it is not a neutral particle.
 

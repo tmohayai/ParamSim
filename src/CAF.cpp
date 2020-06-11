@@ -492,7 +492,8 @@ void CAF::loop()
             //float mctrackid = MCPTrkID->at(i);
             // angle with respect to the incoming neutrino
             float angle  = atan(mcp.X() / mcp.Z());
-            float time = _util->GaussianSmearing(MCPTime->at(i), ECAL_time_resolution);
+            float ecaltime = _util->GaussianSmearing(MCPTime->at(i), ECAL_time_resolution);
+            float time = MCPTime->at(i);
 
             //for neutrons
             if(pdg == 2112)
@@ -544,6 +545,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(ecaltime);
                         _angle.push_back(angle);
                         _preco.push_back(0);
                         anglereco.push_back(0);
@@ -584,6 +586,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(0.);
                         _angle.push_back(angle);
                         _preco.push_back(0);
                         anglereco.push_back(0);
@@ -632,6 +635,7 @@ void CAF::loop()
                 _MCProc.push_back(mcp_process);
                 _MCEndProc.push_back(mcp_endprocess);
                 mctime.push_back(time);
+                etime.push_back(0.);
                 _preco.push_back(0);
                 anglereco.push_back(0);
                 recopidecal.push_back(0);//TODO??
@@ -685,6 +689,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(ecaltime);
                         _preco.push_back(0);
                         anglereco.push_back(0);
 
@@ -729,6 +734,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(0.);
                         _preco.push_back(0);
                         anglereco.push_back(0);
                         //converted so not seen in ECAL
@@ -778,6 +784,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(ecaltime);
                         _preco.push_back(0);
                         anglereco.push_back(0);
 
@@ -821,6 +828,7 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
+                        etime.push_back(0.);
                         _preco.push_back(0);
                         anglereco.push_back(0);
                         //converted not seen by ecal
@@ -902,6 +910,7 @@ void CAF::loop()
                             _preco.push_back(0);
                             anglereco.push_back(angle_reco);
                             recopidecal.push_back(0);
+                            etime.push_back(0.);
                         }
                         else {
                             //Case where the endpoint is not in the TPC, should be able to use the Gluckstern formula
@@ -936,6 +945,8 @@ void CAF::loop()
 
                             //Reaches the ECAL and stops there
                             if( _util->PointInCalo(epoint) ) {
+
+                                etime.push_back(ecaltime);
                                 //Need energy measurement in ecal
                                 TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(pdg));
                                 if(nullptr == part){
@@ -1044,6 +1055,7 @@ void CAF::loop()
                                 //1 MIP = 0.814 MeV
                                 double Erec = Evis * MIP2GeV_factor * sampling_frac;
                                 erecon.push_back(Erec);
+                                etime.push_back(ecaltime);
 
                                 //Muon/Pions/Protons are reco as Muons (without MuID detector)
                                 if( abs(pdg) == 13 || abs(pdg) == 211 ) {
@@ -1057,6 +1069,7 @@ void CAF::loop()
                                 //Does not reach the ECAL???
                                 erecon.push_back(0.);
                                 recopidecal.push_back(0.);
+                                etime.push_back(0.);
                             }
                         } //end endpoint is not in TPC
 
@@ -1206,7 +1219,7 @@ void CAF::loop()
                             _MCProc.push_back(mcp_process);
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
-
+                            etime.push_back(0.);
                             erecon.push_back(0);
                             _preco.push_back(0);
                             anglereco.push_back(0);
@@ -1258,7 +1271,7 @@ void CAF::loop()
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
                     mctime.push_back(time);
-
+                    etime.push_back(0.);
                     erecon.push_back(0);
                     _preco.push_back(0);
                     anglereco.push_back(0);
