@@ -129,9 +129,9 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * pdgmother: pdg code of the particle that created the particle under consideration
 
-  * mctrkid: track number of the particle that created the track under study
+  * mctrkid: number created in G4 to track the particles (relations mother <-> daughters). The original neutrino particle has a track id of -1 and then it is incremented by G4.
 
-  * motherid: id number associated with the mother mc particle
+  * motherid: id number associated with the mother mc particle -> returns the trackid of the mother of this particle
 
   * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
 
@@ -153,7 +153,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * MCPEndZ: end position of the particle along the z-direction (end position of the track) in cm
 
-  * MCProc: a vector containing a string of the GEANT4 process that created a particle (e.g. for particles emerging from a neutrino interacion, the GEANT4 process is "primary")
+  * MCProc: a vector containing a string of the GEANT4 process that created a particle (e.g. for particles emerging from a neutrino interaction, the GEANT4 process is "primary")
 
   * MCEndProc: a vector containing a string of the GEANT4 end process of a particle (e.g. for e+e- pairs emerging from a photon conversion, the end process is "conv")
 
@@ -175,7 +175,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * anglereco: reconstructed angle of the particle with respect to the beam direction (wrt the z-direction)
 
-  * erecon: reconstructed energy of neutral particles that reach the ECAL (when track length != 0 and endpoint is not in the tracker). Particles that are not reconstructed in the ECAL have erecon of 0.
+  * erecon: reconstructed energy of neutral and charged particles that reach the ECAL (when track length != 0 and endpoint is in the calo). Particles that are not reconstructed in the ECAL have erecon of 0.
 
   * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles
 
@@ -194,7 +194,5 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * isCaloStart/End: Check if the particle start/end point is in the ECAL
 
   * isThroughCaloStart/End: Check if the particle start/end point is not in the TPC and the ECAL (assumes went through the ECAL)
-
-recopidecal: reconstructed PDG code of the neutral particles with the ECAL. A value of 0 is considered if the particle does not reach ECAL or if it is not a neutral particle.
 
 Check out the test directory for an example macro on how to read the cafanatree analysis ntuples that are produced as outputs of running the ParamSim module.   
