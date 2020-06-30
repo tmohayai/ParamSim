@@ -102,6 +102,7 @@ int main( int argc, char const *argv[] )
 
     caf->WriteTTree();
     printf( "-30-\n" );
+    caf->CloseTFile();
 
     return 0;
 }
