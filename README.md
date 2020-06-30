@@ -13,66 +13,6 @@ In addition to reconstructing tracks, a dE/dx-based PID is implemented in the mo
 
 *Units are in cm, GeV, ns.*
 
-**Hardcoded values!!**
-
-```C++
-  double _TPCFidRadius = 222.5;
-  double _TPCFidLength = 215.;
-  double _TPCRadius = 273.;
-  double _TPCLength = 259.;
-  double _ECALInnerRadius = 278.;
-  double _ECALOuterRadius = 321.;
-  double _ECALStartX = 364.;
-  double _ECALEndX = 406.;
-```
-
-The volumes are defined as the following:
-
-```C++
-bool Utils::PointInFiducial(TVector3 point)
-{
-    bool isInFiducial = true;
-
-    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
-    if( r_point > _TPCFidRadius ) isInFiducial = false;
-    if( r_point < _TPCFidRadius && std::abs(point.X()) > _TPCFidLength ) isInFiducial = false;
-
-    return isInFiducial;
-}
-```
-```C++
-bool Utils::PointInTPC(TVector3 point)
-{
-    if(PointInFiducial(point)) return true;
-    bool isInTPC = true;
-
-    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
-    if( r_point > _TPCRadius ) isInTPC = false;
-    if( r_point < _TPCRadius && std::abs(point.X()) > _TPCLength ) isInTPC = false;
-
-    return isInTPC;
-}
-```
-```C++
-bool Utils::PointInCalo(TVector3 point)
-{
-    bool isInCalo = false;
-    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
-    //in the Barrel
-    if( r_point > _ECALInnerRadius && r_point < _ECALOuterRadius && std::abs(point.X()) < _ECALStartX ) isInCalo = true;
-    //in the Endcap
-    if( r_point < _ECALInnerRadius && std::abs(point.X()) > _ECALStartX && std::abs(point.X()) < _ECALEndX ) isInCalo = true;
-
-    return isInCalo;
-}
-```
-```C++
-bool Utils::isThroughCalo(TVector3 point)
-{
-    return !PointInTPC(point) && !PointInCalo(point);
-}
-```
-
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following:
 
 * Event: an art event (not neutrino-interaction event)
@@ -129,7 +69,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * pdgmother: pdg code of the particle that created the particle under consideration
 
-  * mctrkid: number created in G4 to track the particles (relations mother <-> daughters). The original neutrino particle has a track id of -1 and then it is incremented by G4.
+  * mctrkid: number created in G4 to track the particles (relations mother <-> daughters). The original neutrino has a track id of -1 and then it is incremented by G4.
 
   * motherid: id number associated with the mother mc particle -> returns the trackid of the mother of this particle
 
@@ -196,3 +136,63 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
   * isThroughCaloStart/End: Check if the particle start/end point is not in the TPC and the ECAL (assumes went through the ECAL)
 
 Check out the test directory for an example macro on how to read the cafanatree analysis ntuples that are produced as outputs of running the ParamSim module.   
+
+**Hardcoded values!!**
+
+```C++
+  double _TPCFidRadius = 222.5;
+  double _TPCFidLength = 215.;
+  double _TPCRadius = 273.;
+  double _TPCLength = 259.;
+  double _ECALInnerRadius = 278.;
+  double _ECALOuterRadius = 321.;
+  double _ECALStartX = 364.;
+  double _ECALEndX = 406.;
+```
+
+The volumes are defined as the following:
+
+```C++
+bool Utils::PointInFiducial(TVector3 point)
+{
+    bool isInFiducial = true;
+
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    if( r_point > _TPCFidRadius ) isInFiducial = false;
+    if( r_point < _TPCFidRadius && std::abs(point.X()) > _TPCFidLength ) isInFiducial = false;
+
+    return isInFiducial;
+}
+```
+```C++
+bool Utils::PointInTPC(TVector3 point)
+{
+    if(PointInFiducial(point)) return true;
+    bool isInTPC = true;
+
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    if( r_point > _TPCRadius ) isInTPC = false;
+    if( r_point < _TPCRadius && std::abs(point.X()) > _TPCLength ) isInTPC = false;
+
+    return isInTPC;
+}
+```
+```C++
+bool Utils::PointInCalo(TVector3 point)
+{
+    bool isInCalo = false;
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    //in the Barrel
+    if( r_point > _ECALInnerRadius && r_point < _ECALOuterRadius && std::abs(point.X()) < _ECALStartX ) isInCalo = true;
+    //in the Endcap
+    if( r_point < _ECALInnerRadius && std::abs(point.X()) > _ECALStartX && std::abs(point.X()) < _ECALEndX ) isInCalo = true;
+
+    return isInCalo;
+}
+```
+```C++
+bool Utils::isThroughCalo(TVector3 point)
+{
+    return !PointInTPC(point) && !PointInCalo(point);
+}
+```
