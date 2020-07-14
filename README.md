@@ -37,7 +37,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * t: a variable used in coherent pion analysis
 
-  * ntype: neutrino type/flavor
+  * ntype: neutrino PDG
 
   * ccnc: charged current (ccnc == 0) or neutral current (ccnc == 1)
 
