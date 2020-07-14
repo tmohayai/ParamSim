@@ -39,7 +39,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * ntype: neutrino type/flavor
 
-  * ccnc: charged current or neutral current
+  * ccnc: charged current (ccnc == 0) or neutral current (ccnc == 1)
 
   * gint: a variable used in coherent pion analysis
 
