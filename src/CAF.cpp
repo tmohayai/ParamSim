@@ -828,7 +828,7 @@ void CAF::loop()
 
                         // std::cout << "gamma detected in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                     }
-                    else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint))
+                    else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
                     {
                         //case endpoint is in the TPC (Converted!) or in between the TPC/ECAL
                         erecon.push_back(0);
@@ -872,7 +872,7 @@ void CAF::loop()
                         // std::cout << "gamma converted in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                     }
                     else{
-                        std::cout << "Gamma endpoint in not inCalo, not inTPC and not in between! Must be through ECAL???" << std::endl;
+                        std::cout << "Gamma endpoint in not inCalo, not inTPC, not in between and not though ECAL --- Sth wrong!" << std::endl;
                     }
                 }
                 else
@@ -926,7 +926,7 @@ void CAF::loop()
                         motherid.push_back(MCMotherIndex->at(i));
                         // std::cout << "gamma detected in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                     }
-                    else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint))
+                    else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
                     {
                         //from pi0 and converted in TPC or stopped between TPC/ECAL
                         erecon.push_back(0);
@@ -970,7 +970,7 @@ void CAF::loop()
                         // std::cout << "gamma converted in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                     }
                     else{
-                        std::cout << "Gamma endpoint in not inCalo, not inTPC and not in between! Must be through ECAL???" << std::endl;
+                        std::cout << "Gamma endpoint in not inCalo, not inTPC, not in between and not though ECAL --- Sth wrong!" << std::endl;
                     }
                 }
             }

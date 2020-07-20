@@ -96,7 +96,11 @@ bool Utils::hasDecayedInCalo(TVector3 point)
 bool Utils::isBarrel(TVector3 point)
 {
     bool isBarrel = false;
-    if( std::abs(point.X()) < _ECALStartX ) isBarrel = true;
+    float theta = std::atan(_ECALInnerRadius / _ECALStartX ); //angle for barrel/endcap transition
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    float theta_point = std::atan(r_point / point.X() ); //angle for barrel/endcap transition for the point
+
+    if( theta_point > theta ) isBarrel = true;
     return isBarrel;
 }
 

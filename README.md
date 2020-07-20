@@ -220,9 +220,13 @@ bool Utils::isThroughCalo(TVector3 point)
 ```C++
 bool Utils::isBarrel(TVector3 point)
 {
-    bool isBarrel = false;
-    if( std::abs(point.X()) < _ECALStartX ) isBarrel = true;
-    return isBarrel;
+  bool isBarrel = false;
+  float theta = std::atan(_ECALInnerRadius / _ECALStartX ); //angle for barrel/endcap transition
+  float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+  float theta_point = std::atan(r_point / point.X() ); //angle for barrel/endcap transition for the point
+
+  if( theta_point > theta ) isBarrel = true;
+  return isBarrel;
 }
 ```
 ```C++
