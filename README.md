@@ -135,6 +135,12 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * isThroughCaloStart/End: Check if the particle start/end point is not in the TPC and the ECAL (assumes went through the ECAL)
 
+  * isInBetweenStart/End: Check if the particle start/end point is in between the TPC and the ECAL
+
+  * isBarrelStart/End: Flag to tell if the particle start/end point is in the *Barrel region*
+
+  * isEndcapStart/End: Flag to tell if the particle start/end point is in the *Endcap region*
+
 Check out the test directory for an example macro on how to read the cafanatree analysis ntuples that are produced as outputs of running the ParamSim module.   
 
 **Hardcoded values!!**
@@ -191,8 +197,43 @@ bool Utils::PointInCalo(TVector3 point)
 }
 ```
 ```C++
+bool Utils::PointStopBetween(TVector3 point)
+{
+    //Barrel Radius 278 cm
+    //Endcap starts at 364 cm
+    bool isStopBetween = false;
+    float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+    //in the Barrel
+    if( r_point < _ECALInnerRadius && r_point > _TPCRadius && std::abs(point.X()) < _TPCLength ) isStopBetween = true;
+    //in the Endcap
+    if( r_point < _ECALInnerRadius && std::abs(point.X()) > _TPCLength && std::abs(point.X()) < _ECALStartX ) isStopBetween = true;
+
+    return isStopBetween;
+}
+```
+```C++
 bool Utils::isThroughCalo(TVector3 point)
 {
-    return !PointInTPC(point) && !PointInCalo(point);
+    return !PointInTPC(point) && !PointStopBetween(point) && !PointInCalo(point);
+}
+```
+```C++
+bool Utils::isBarrel(TVector3 point)
+{
+  bool isBarrel = false;
+  float theta = std::atan(_ECALInnerRadius / _ECALStartX ); //angle for barrel/endcap transition
+  float r_point = std::sqrt( point.Y()*point.Y() + point.Z()*point.Z() );
+  float theta_point = std::atan(r_point / point.X() ); //angle for barrel/endcap transition for the point
+
+  if( theta_point > theta ) isBarrel = true;
+  return isBarrel;
+}
+```
+```C++
+bool Utils::isEndcap(TVector3 point)
+{
+    bool isEndcap = false;
+    if( !isBarrel(point) ) isEndcap = true;
+    return isEndcap;
 }
 ```

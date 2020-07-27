@@ -125,11 +125,18 @@ bool CAF::BookTFile()
         cafMVA->Branch("isFidStart", &isFidStart);
         cafMVA->Branch("isTPCStart", &isTPCStart);
         cafMVA->Branch("isCaloStart", &isCaloStart);
+        cafMVA->Branch("isInBetweenStart", &isInBetweenStart);
         cafMVA->Branch("isThroughCaloStart", &isThroughCaloStart);
+        cafMVA->Branch("isBarrelStart", &isBarrelStart);
+        cafMVA->Branch("isEndcapStart", &isEndcapStart);
+
         cafMVA->Branch("isFidEnd", &isFidEnd);
         cafMVA->Branch("isTPCEnd", &isTPCEnd);
         cafMVA->Branch("isCaloEnd", &isCaloEnd);
         cafMVA->Branch("isThroughCaloEnd", &isThroughCaloEnd);
+        cafMVA->Branch("isInBetweenEnd", &isInBetweenEnd);
+        cafMVA->Branch("isBarrelEnd", &isBarrelEnd);
+        cafMVA->Branch("isEndcapEnd", &isEndcapEnd);
 
         return true;
     }
@@ -228,10 +235,17 @@ void CAF::ClearVectors()
     isTPCStart.clear();
     isCaloStart.clear();
     isThroughCaloStart.clear();
+    isInBetweenStart.clear();
+    isBarrelStart.clear();
+    isEndcapStart.clear();
+
     isFidEnd.clear();
     isTPCEnd.clear();
     isCaloEnd.clear();
     isThroughCaloEnd.clear();
+    isInBetweenEnd.clear();
+    isBarrelEnd.clear();
+    isEndcapEnd.clear();
 }
 
 void CAF::CheckVectorSize()
@@ -463,9 +477,15 @@ void CAF::loop()
             std::string mcp_process = MCPProc->at(i);
             //Get ending process
             std::string mcp_endprocess = MCPEndProc->at(i);
+            int mctrackid = MCPTrkID->at(i);
+            int pdg = PDG->at(i);
+
+            // std::cout << "pdg " << pdg << " process " << mcp_process << " end process " << mcp_endprocess << std::endl;
+            // if(mcp_process != "primary" && mcp_process != "Decay" && mcp_process != "conv") continue;
 
             nFSP++;
-            int pdg = PDG->at(i);
+            TVector3 mcp(MCPStartPX->at(i), MCPStartPY->at(i), MCPStartPZ->at(i));
+            float ptrue = (mcp).Mag();
 
             //need to ignore neutrals for this - put the value to 0
             auto result = std::find(pdg_neutral.begin(), pdg_neutral.end(), abs(pdg));
@@ -492,7 +512,7 @@ void CAF::loop()
                 for(size_t itraj = 1; itraj < TrajMCPX->size(); itraj++)
                 {
                     //check that it is the correct mcp
-                    if(TrajMCPTrajIndex->at(itraj) == (int) i){
+                    if(TrajMCPTrajIndex->at(itraj) == mctrackid){
                         //Traj point+1
                         TVector3 point(TrajMCPX->at(itraj)- _util->GetOrigin()[0], TrajMCPY->at(itraj)- _util->GetOrigin()[1], TrajMCPZ->at(itraj)- _util->GetOrigin()[2]);
 
@@ -520,10 +540,7 @@ void CAF::loop()
             //end track length
             //***************************************************************************************************************/
 
-            TVector3 mcp(MCPStartPX->at(i), MCPStartPY->at(i), MCPStartPZ->at(i));
             TVector3 xhat(1, 0, 0);
-
-            float ptrue = (mcp).Mag();
             // float pz = mcp.Z();
             // float pt = (mcp.Cross(xhat)).Mag();
             // float px = mcp.X();
@@ -542,416 +559,17 @@ void CAF::loop()
             isTPCStart.push_back(_util->PointInTPC(spoint));
             isCaloStart.push_back(_util->PointInCalo(spoint));
             isThroughCaloStart.push_back(_util->isThroughCalo(spoint));
+            isInBetweenStart.push_back(_util->PointStopBetween(spoint));
+            isBarrelStart.push_back(_util->isBarrel(spoint));
+            isEndcapStart.push_back(_util->isEndcap(spoint));
             //Check where endpoint of mcp is
             isFidEnd.push_back(_util->PointInFiducial(epoint));
             isTPCEnd.push_back(_util->PointInTPC(epoint));
             isCaloEnd.push_back(_util->PointInCalo(epoint));
             isThroughCaloEnd.push_back(_util->isThroughCalo(epoint));
-
-            //start neutrons
-            //***************************************************************************************************************/
-
-            //for neutrons
-            if(pdg == 2112)
-            {
-                if(_util->PointInCalo(epoint))
-                {
-                    //check if it can be detected by the ECAL
-                    //Assumes 40% efficiency to detect
-                    float random_number = _util->GetRamdomNumber();
-                    float true_KE = ptrue*ptrue / (2*neutron_mass); // in GeV
-                    int index = (true_KE >= 0.05) ? 1 : 0;
-
-                    // std::cout << "KE " << true_KE << " index " << index << " 1 - eff " << 1-NeutronECAL_detEff[index] << " rdnm " << random_number << std::endl;
-
-                    if(random_number > (1 - NeutronECAL_detEff[index]) && true_KE > 0.003)//Threshold of 3 MeV
-                    {
-                        //TODO random is first interaction or rescatter and smear accordingly to Chris's study
-                        //Detected in the ECAL
-                        // recopid.push_back(2112);
-                        recopid.push_back(0); //reco pid set to 0?
-                        detected.push_back(1);
-                        float eres = sigmaNeutronECAL_first * true_KE;
-                        float ereco = _util->GaussianSmearing( true_KE, eres );
-                        erecon.push_back(ereco > 0 ? ereco : 0.);
-                        // std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) << " ereco " << erecon[i] << std::endl;
-                        truepdg.push_back(pdg);
-                        truep.push_back(ptrue);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(ecaltime);
-                        _angle.push_back(angle);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopidecal.push_back(2112);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-
-                        // std::cout << "Neutron detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                    else
-                    {
-                        //neutron not detected
-                        detected.push_back(0);
-                        truep.push_back(ptrue);
-                        recopid.push_back(0);
-                        erecon.push_back(0);
-                        truepdg.push_back(pdg);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(0.);
-                        _angle.push_back(angle);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopidecal.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-
-                        // std::cout << "Neutron not detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                } //endpoint is in ECAL
-                else
-                {
-                    //Endpoint is not in calo
-                    detected.push_back(0);
-                    truep.push_back(ptrue);
-                    recopid.push_back(0);
-                    erecon.push_back(0);
-                    truepdg.push_back(pdg);
-                    truepx.push_back(MCPStartPX->at(i));
-                    truepy.push_back(MCPStartPY->at(i));
-                    truepz.push_back(MCPStartPZ->at(i));
-                    if(_correct4origin){
-                        _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                        _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                        _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                        _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                        _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                        _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                    } else {
-                        _MCPStartX.push_back(MCPStartX->at(i));
-                        _MCPStartY.push_back(MCPStartY->at(i));
-                        _MCPStartZ.push_back(MCPStartZ->at(i));
-                        _MCPEndX.push_back(MCPEndX->at(i));
-                        _MCPEndY.push_back(MCPEndY->at(i));
-                        _MCPEndZ.push_back(MCPEndZ->at(i));
-                    }
-                    pdgmother.push_back(PDGMother->at(i));
-                    //Save MC process
-                    _MCProc.push_back(mcp_process);
-                    _MCEndProc.push_back(mcp_endprocess);
-                    mctime.push_back(time);
-                    etime.push_back(0.);
-                    _angle.push_back(angle);
-                    _preco.push_back(0);
-                    anglereco.push_back(0);
-                    recopidecal.push_back(0);
-                    for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                    mctrkid.push_back(MCPTrkID->at(i));
-                    motherid.push_back(MCMotherIndex->at(i));
-                }
-            }
-
-            //End neutrons
-            //***************************************************************************************************************/
-
-            //start pi0s
-            //***************************************************************************************************************/
-
-            //for pi0s
-            if(pdg == 111)
-            {
-                //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
-                // float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
-                erecon.push_back(0);
-                recopid.push_back(0);
-                detected.push_back(0);
-
-                truep.push_back(ptrue);
-                truepdg.push_back(pdg);
-                truepx.push_back(MCPStartPX->at(i));
-                truepy.push_back(MCPStartPY->at(i));
-                truepz.push_back(MCPStartPZ->at(i));
-                if(_correct4origin){
-                    _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                    _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                    _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                    _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                    _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                    _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                } else {
-                    _MCPStartX.push_back(MCPStartX->at(i));
-                    _MCPStartY.push_back(MCPStartY->at(i));
-                    _MCPStartZ.push_back(MCPStartZ->at(i));
-                    _MCPEndX.push_back(MCPEndX->at(i));
-                    _MCPEndY.push_back(MCPEndY->at(i));
-                    _MCPEndZ.push_back(MCPEndZ->at(i));
-                }
-                pdgmother.push_back(PDGMother->at(i));
-                _angle.push_back(angle);
-                //Save MC process
-                _MCProc.push_back(mcp_process);
-                _MCEndProc.push_back(mcp_endprocess);
-                mctime.push_back(time);
-                etime.push_back(0.);
-                _preco.push_back(0);
-                anglereco.push_back(0);
-                recopidecal.push_back(0);//TODO??
-                for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                mctrkid.push_back(MCPTrkID->at(i));
-                motherid.push_back(MCMotherIndex->at(i));
-
-                // std::cout << "pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-            }
-
-            //end pi0s
-            //***************************************************************************************************************/
-
-            //start gammas
-            //***************************************************************************************************************/
-
-            //for gammas
-            if(pdg == 22)
-            {
-                //TODO check if they are not from a pi0 or decayed in the TPC and hit the ECAL!
-                if( PDGMother->at(i) != 111 )
-                {
-                    //Endpoint is in the ECAL
-                    if(_util->PointInCalo(epoint))
-                    {
-                        //if they hit the ECAL and smear their energy
-                        float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
-                        float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
-                        erecon.push_back(ereco);
-                        recopid.push_back(0);
-                        detected.push_back(1);
-
-                        truep.push_back(ptrue);
-                        truepdg.push_back(pdg);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        _angle.push_back(angle);
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(ecaltime);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-
-                        //reach the ECAL, should be tagged as gamma
-                        recopidecal.push_back(22);
-
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-
-                        // std::cout << "gamma detected in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                    else
-                    {
-                        //case endpoint is in the TPC (Converted!)
-                        erecon.push_back(0);
-                        recopid.push_back(0);
-                        detected.push_back(0);
-
-                        truep.push_back(ptrue);
-                        truepdg.push_back(pdg);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        _angle.push_back(angle);
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(0.);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        //converted so not seen in ECAL
-                        recopidecal.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-                        // std::cout << "gamma converted in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                }
-                else
-                {
-                    //case they are from pi0
-                    //Endpoint is not in the tracker, reaches the ecal
-                    if(_util->PointInCalo(epoint))
-                    {
-                        //if they hit the ECAL and smear their energy
-                        float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
-                        float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
-                        erecon.push_back(ereco);
-                        recopid.push_back(0);
-                        detected.push_back(1);
-
-                        truep.push_back(ptrue);
-                        truepdg.push_back(pdg);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        _angle.push_back(angle);
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(ecaltime);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-
-                        //reaches the ecal
-                        recopidecal.push_back(22);
-
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-                        // std::cout << "gamma detected in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                    else
-                    {
-                        //from pi0 and converted in TPC
-                        erecon.push_back(0);
-                        recopid.push_back(0);
-                        detected.push_back(0);
-
-                        truep.push_back(ptrue);
-                        truepdg.push_back(pdg);
-                        truepx.push_back(MCPStartPX->at(i));
-                        truepy.push_back(MCPStartPY->at(i));
-                        truepz.push_back(MCPStartPZ->at(i));
-                        if(_correct4origin){
-                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
-                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
-                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
-                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
-                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
-                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
-                        } else {
-                            _MCPStartX.push_back(MCPStartX->at(i));
-                            _MCPStartY.push_back(MCPStartY->at(i));
-                            _MCPStartZ.push_back(MCPStartZ->at(i));
-                            _MCPEndX.push_back(MCPEndX->at(i));
-                            _MCPEndY.push_back(MCPEndY->at(i));
-                            _MCPEndZ.push_back(MCPEndZ->at(i));
-                        }
-                        pdgmother.push_back(PDGMother->at(i));
-                        _angle.push_back(angle);
-                        //Save MC process
-                        _MCProc.push_back(mcp_process);
-                        _MCEndProc.push_back(mcp_endprocess);
-                        mctime.push_back(time);
-                        etime.push_back(0.);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        //converted not seen by ecal
-                        recopidecal.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
-                        motherid.push_back(MCMotherIndex->at(i));
-                        // std::cout << "gamma converted in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
-                    }
-                }
-            }
-
-            //end gammas
-            //***************************************************************************************************************/
+            isInBetweenEnd.push_back(_util->PointStopBetween(epoint));
+            isBarrelEnd.push_back(_util->isBarrel(epoint));
+            isEndcapEnd.push_back(_util->isEndcap(epoint));
 
             //start tpc
             //***************************************************************************************************************/
@@ -971,7 +589,6 @@ void CAF::loop()
 
                         // save the true PDG, parametrized PID comes later
                         truepdg.push_back(pdg);
-                        detected.push_back(1);
                         truepx.push_back(MCPStartPX->at(i));
                         truepy.push_back(MCPStartPY->at(i));
                         truepz.push_back(MCPStartPZ->at(i));
@@ -1026,6 +643,7 @@ void CAF::loop()
                             anglereco.push_back(angle_reco);
                             recopidecal.push_back(0);
                             etime.push_back(0.);
+                            detected.push_back(0);
                         }
                         else
                         {
@@ -1064,7 +682,8 @@ void CAF::loop()
                                 etime.push_back(ecaltime);
                                 //Need energy measurement in ecal
                                 TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(pdg));
-                                if(nullptr == part){
+                                if(nullptr == part)
+                                {
                                     std::cout << "Could not find particle in root pdg table, pdg " << pdg << std::endl;
                                     //deuteron
                                     if( pdg == 1000010020 ) {
@@ -1073,11 +692,13 @@ void CAF::loop()
                                         float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
                                         erecon.push_back(ereco);
                                         recopidecal.push_back(0);
+                                        detected.push_back(1);
                                     }
                                     else
                                     {
                                         erecon.push_back(0);
                                         recopidecal.push_back(0);
+                                        detected.push_back(0);
                                     }
                                 }
                                 else
@@ -1091,7 +712,8 @@ void CAF::loop()
                                     float etrue = ptrue;
                                     float ECAL_resolution = fRes->Eval(etrue)*etrue;
                                     float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
-                                    erecon.push_back(ereco);
+                                    erecon.push_back((ereco > 0) ? ereco : 0.);
+                                    detected.push_back(1);
                                     // std::cout << "E/p " << ereco/preco << " true pdg " << pdg << std::endl;
 
                                     //Electron
@@ -1173,17 +795,13 @@ void CAF::loop()
                                 Evis = _util->GaussianSmearing(Evis, ECAL_MIP_Res);
                                 //1 MIP = 0.814 MeV
                                 double Erec = Evis * MIP2GeV_factor * sampling_frac;
-                                erecon.push_back(Erec);
+                                erecon.push_back((Erec > 0) ? Erec : 0.);
                                 etime.push_back(ecaltime);
+                                detected.push_back(1);
 
                                 //Muon/Pions/Protons are reco as Muons (without MuID detector)
-                                if( abs(pdg) == 13 || abs(pdg) == 211 ) {
-                                    recopidecal.push_back(13);
-                                }
-                                if( abs(pdg) == 2212 ) {
-                                    recopidecal.push_back(13); //TODO
-                                }
-
+                                if( abs(pdg) == 13 || abs(pdg) == 211 || abs(pdg) == 2212 )
+                                recopidecal.push_back(13);
                             }
                             else
                             {
@@ -1191,6 +809,7 @@ void CAF::loop()
                                 erecon.push_back(0.);
                                 recopidecal.push_back(0.);
                                 etime.push_back(0.);
+                                detected.push_back(0);
                             }
                         } //end endpoint is not in TPC
 
@@ -1368,14 +987,173 @@ void CAF::loop()
             }//close if track_length > tpc_min_length
             else
             {
-                //Not visible in the TPC and not neutron or gamma or pi0 (otherwise it has been already done above)
-                //ignore
+                //Not visible in the TPC
 
-                if(pdg != 2112 && pdg != 111 && pdg != 22){
-                    // std::cout << "Not visible in TPC but no n, g or pi0" << std::endl;
-                    // std::cout << pdg << std::endl;
-                    truepdg.push_back(pdg);
+                //start neutrons
+                //***************************************************************************************************************/
+
+                //for neutrons
+                if(pdg == 2112)
+                {
+                    if(_util->PointInCalo(epoint)) //needs to stop in the ECAL
+                    {
+                        //check if it can be detected by the ECAL
+                        //Assumes 40% efficiency to detect
+                        float random_number = _util->GetRamdomNumber();
+                        float true_KE = ptrue*ptrue / (2*neutron_mass); // in GeV
+                        int index = (true_KE >= 0.05) ? 1 : 0;
+
+                        // std::cout << "KE " << true_KE << " index " << index << " 1 - eff " << 1-NeutronECAL_detEff[index] << " rdnm " << random_number << std::endl;
+
+                        if(random_number > (1 - NeutronECAL_detEff[index]) && true_KE > 0.003)//Threshold of 3 MeV
+                        {
+                            //TODO random is first interaction or rescatter and smear accordingly to Chris's study
+                            //Detected in the ECAL
+                            // recopid.push_back(2112);
+                            recopid.push_back(0); //reco pid set to 0?
+                            detected.push_back(1);
+                            float eres = sigmaNeutronECAL_first * true_KE;
+                            float ereco = _util->GaussianSmearing( true_KE, eres );
+                            erecon.push_back(ereco > 0 ? ereco : 0.);
+                            // std::cout << "true part n true energy " << std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) << " ereco " << erecon[i] << std::endl;
+                            truepdg.push_back(pdg);
+                            truep.push_back(ptrue);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(ecaltime);
+                            _angle.push_back(angle);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+                            recopidecal.push_back(2112);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+
+                            // std::cout << "Neutron detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                        else
+                        {
+                            //neutron not detected
+                            detected.push_back(0);
+                            truep.push_back(ptrue);
+                            recopid.push_back(0);
+                            erecon.push_back(0);
+                            truepdg.push_back(pdg);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(0.);
+                            _angle.push_back(angle);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+                            recopidecal.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+
+                            // std::cout << "Neutron not detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                    } //endpoint is in ECAL
+                    else
+                    {
+                        //Endpoint is not in calo (TPC/isInBetween or outside Calo)
+                        detected.push_back(0);
+                        truep.push_back(ptrue);
+                        recopid.push_back(0);
+                        erecon.push_back(0);
+                        truepdg.push_back(pdg);
+                        truepx.push_back(MCPStartPX->at(i));
+                        truepy.push_back(MCPStartPY->at(i));
+                        truepz.push_back(MCPStartPZ->at(i));
+                        if(_correct4origin){
+                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                        } else {
+                            _MCPStartX.push_back(MCPStartX->at(i));
+                            _MCPStartY.push_back(MCPStartY->at(i));
+                            _MCPStartZ.push_back(MCPStartZ->at(i));
+                            _MCPEndX.push_back(MCPEndX->at(i));
+                            _MCPEndY.push_back(MCPEndY->at(i));
+                            _MCPEndZ.push_back(MCPEndZ->at(i));
+                        }
+                        pdgmother.push_back(PDGMother->at(i));
+                        //Save MC process
+                        _MCProc.push_back(mcp_process);
+                        _MCEndProc.push_back(mcp_endprocess);
+                        mctime.push_back(time);
+                        etime.push_back(0.);
+                        _angle.push_back(angle);
+                        _preco.push_back(0);
+                        anglereco.push_back(0);
+                        recopidecal.push_back(0);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        mctrkid.push_back(MCPTrkID->at(i));
+                        motherid.push_back(MCMotherIndex->at(i));
+                    }
+                }
+
+                //End neutrons
+                //***************************************************************************************************************/
+
+                //start pi0s
+                //***************************************************************************************************************/
+
+                //for pi0s
+                if(pdg == 111)
+                {
+                    //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
+                    // float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
+                    erecon.push_back(0);
+                    recopid.push_back(0);
                     detected.push_back(0);
+
+                    truep.push_back(ptrue);
+                    truepdg.push_back(pdg);
                     truepx.push_back(MCPStartPX->at(i));
                     truepy.push_back(MCPStartPY->at(i));
                     truepz.push_back(MCPStartPZ->at(i));
@@ -1395,30 +1173,385 @@ void CAF::loop()
                         _MCPEndZ.push_back(MCPEndZ->at(i));
                     }
                     pdgmother.push_back(PDGMother->at(i));
-                    // save the true momentum
-                    truep.push_back(ptrue);
-                    // save the true angle
                     _angle.push_back(angle);
                     //Save MC process
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
                     mctime.push_back(time);
                     etime.push_back(0.);
-                    erecon.push_back(0);
                     _preco.push_back(0);
                     anglereco.push_back(0);
-                    recopid.push_back(0);
-                    recopidecal.push_back(0);
+                    recopidecal.push_back(0);//TODO??
                     for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
                     mctrkid.push_back(MCPTrkID->at(i));
                     motherid.push_back(MCMotherIndex->at(i));
-                    // std::cout << "particle not seen in TPC, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
+
+                    // std::cout << "pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                }
+
+                //end pi0s
+                //***************************************************************************************************************/
+
+                //start gammas
+                //***************************************************************************************************************/
+
+                //for gammas
+                if(pdg == 22)
+                {
+                    if( PDGMother->at(i) != 111 )
+                    {
+                        //Endpoint is in the ECAL
+                        if(_util->PointInCalo(epoint))
+                        {
+                            //if they hit the ECAL and smear their energy
+                            float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
+                            float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
+                            erecon.push_back( (ereco > 0) ? ereco : 0. );
+                            recopid.push_back(0);
+                            detected.push_back(1);
+
+                            truep.push_back(ptrue);
+                            truepdg.push_back(pdg);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            _angle.push_back(angle);
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(ecaltime);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+
+                            //reach the ECAL, should be tagged as gamma
+                            recopidecal.push_back(22);
+
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+
+                            // std::cout << "gamma detected in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                        else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
+                        {
+                            //case endpoint is in the TPC (Converted!) or in between the TPC/ECAL
+                            erecon.push_back(0);
+                            recopid.push_back(0);
+                            detected.push_back(0);
+
+                            truep.push_back(ptrue);
+                            truepdg.push_back(pdg);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            _angle.push_back(angle);
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(0.);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+                            //converted so not seen in ECAL
+                            recopidecal.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+                            // std::cout << "gamma converted in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                        else{
+                            std::cout << "Gamma endpoint in not inCalo, not inTPC, not in between and not though ECAL --- Sth wrong!" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        //case they are from pi0
+                        //Endpoint is not in the tracker, reaches the ecal
+                        if(_util->PointInCalo(epoint))
+                        {
+                            //if they hit the ECAL and smear their energy
+                            float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
+                            float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
+                            erecon.push_back((ereco > 0) ? ereco : 0.);
+                            recopid.push_back(0);
+                            detected.push_back(1);
+
+                            truep.push_back(ptrue);
+                            truepdg.push_back(pdg);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            _angle.push_back(angle);
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(ecaltime);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+
+                            //reaches the ecal
+                            recopidecal.push_back(22);
+
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+                            // std::cout << "gamma detected in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                        else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
+                        {
+                            //from pi0 and converted in TPC or stopped between TPC/ECAL
+                            erecon.push_back(0);
+                            recopid.push_back(0);
+                            detected.push_back(0);
+
+                            truep.push_back(ptrue);
+                            truepdg.push_back(pdg);
+                            truepx.push_back(MCPStartPX->at(i));
+                            truepy.push_back(MCPStartPY->at(i));
+                            truepz.push_back(MCPStartPZ->at(i));
+                            if(_correct4origin){
+                                _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                                _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                                _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                                _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                                _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                                _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                            } else {
+                                _MCPStartX.push_back(MCPStartX->at(i));
+                                _MCPStartY.push_back(MCPStartY->at(i));
+                                _MCPStartZ.push_back(MCPStartZ->at(i));
+                                _MCPEndX.push_back(MCPEndX->at(i));
+                                _MCPEndY.push_back(MCPEndY->at(i));
+                                _MCPEndZ.push_back(MCPEndZ->at(i));
+                            }
+                            pdgmother.push_back(PDGMother->at(i));
+                            _angle.push_back(angle);
+                            //Save MC process
+                            _MCProc.push_back(mcp_process);
+                            _MCEndProc.push_back(mcp_endprocess);
+                            mctime.push_back(time);
+                            etime.push_back(0.);
+                            _preco.push_back(0);
+                            anglereco.push_back(0);
+                            //converted not seen by ecal
+                            recopidecal.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            mctrkid.push_back(MCPTrkID->at(i));
+                            motherid.push_back(MCMotherIndex->at(i));
+                            // std::cout << "gamma converted in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
+                        }
+                        else{
+                            std::cout << "Gamma endpoint in not inCalo, not inTPC, not in between and not though ECAL --- Sth wrong!" << std::endl;
+                        }
+                    }
+                }
+
+                //end gammas
+                //***************************************************************************************************************/
+
+                //Case for particles that stop or go through ECAL (problematic particles with no track length????)
+                //Not visible in the TPC and not neutron or gamma or pi0 (otherwise it has been already done above)
+
+                if(pdg != 2112 && pdg != 111 && pdg != 22)
+                {
+                    if(_util->PointInCalo(epoint))
+                    {
+                        truepdg.push_back(pdg);
+                        detected.push_back(1);
+                        truepx.push_back(MCPStartPX->at(i));
+                        truepy.push_back(MCPStartPY->at(i));
+                        truepz.push_back(MCPStartPZ->at(i));
+                        if(_correct4origin){
+                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                        } else {
+                            _MCPStartX.push_back(MCPStartX->at(i));
+                            _MCPStartY.push_back(MCPStartY->at(i));
+                            _MCPStartZ.push_back(MCPStartZ->at(i));
+                            _MCPEndX.push_back(MCPEndX->at(i));
+                            _MCPEndY.push_back(MCPEndY->at(i));
+                            _MCPEndZ.push_back(MCPEndZ->at(i));
+                        }
+                        pdgmother.push_back(PDGMother->at(i));
+                        // save the true momentum
+                        truep.push_back(ptrue);
+                        // save the true angle
+                        _angle.push_back(angle);
+                        //Save MC process
+                        _MCProc.push_back(mcp_process);
+                        _MCEndProc.push_back(mcp_endprocess);
+                        mctime.push_back(time);
+
+                        etime.push_back(ecaltime);
+                        float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
+                        float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
+                        erecon.push_back((ereco > 0) ? ereco : 0.);
+                        recopidecal.push_back(0);
+
+                        _preco.push_back(0);
+                        anglereco.push_back(0);
+                        recopid.push_back(0);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+
+                        mctrkid.push_back(MCPTrkID->at(i));
+                        motherid.push_back(MCMotherIndex->at(i));
+                    }
+                    else if (_util->isThroughCalo(epoint))
+                    {
+                        truepdg.push_back(pdg);
+                        detected.push_back(1);
+                        truepx.push_back(MCPStartPX->at(i));
+                        truepy.push_back(MCPStartPY->at(i));
+                        truepz.push_back(MCPStartPZ->at(i));
+                        if(_correct4origin){
+                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                        } else {
+                            _MCPStartX.push_back(MCPStartX->at(i));
+                            _MCPStartY.push_back(MCPStartY->at(i));
+                            _MCPStartZ.push_back(MCPStartZ->at(i));
+                            _MCPEndX.push_back(MCPEndX->at(i));
+                            _MCPEndY.push_back(MCPEndY->at(i));
+                            _MCPEndZ.push_back(MCPEndZ->at(i));
+                        }
+                        pdgmother.push_back(PDGMother->at(i));
+                        // save the true momentum
+                        truep.push_back(ptrue);
+                        // save the true angle
+                        _angle.push_back(angle);
+                        //Save MC process
+                        _MCProc.push_back(mcp_process);
+                        _MCEndProc.push_back(mcp_endprocess);
+                        mctime.push_back(time);
+
+                        etime.push_back(ecaltime);
+                        //Case the endpoint is outside the CALO -> it went through the ECAL (mu/pi/p possible)
+                        //the ECAL will see 60 MIPs on average
+                        double Evis = (double)nLayers; //in MIP
+                        //Smearing to account for Gaussian detector noise (Landau negligible)
+                        Evis = _util->GaussianSmearing(Evis, ECAL_MIP_Res);
+                        //1 MIP = 0.814 MeV
+                        double Erec = Evis * MIP2GeV_factor * sampling_frac;
+                        erecon.push_back((Erec > 0) ? Erec : 0.);
+                        etime.push_back(ecaltime);
+                        detected.push_back(1);
+
+                        //Muon/Pions/Protons are reco as Muons (without MuID detector)
+                        if( abs(pdg) == 13 || abs(pdg) == 211 || abs(pdg) == 2212 )
+                        recopidecal.push_back(13);
+
+                        _preco.push_back(0);
+                        anglereco.push_back(0);
+                        recopid.push_back(0);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+
+                        mctrkid.push_back(MCPTrkID->at(i));
+                        motherid.push_back(MCMotherIndex->at(i));
+                    }
+                    else
+                    {
+                        // std::cout << "Not visible in TPC but no n, g or pi0" << std::endl;
+                        // std::cout << pdg << std::endl;
+                        truepdg.push_back(pdg);
+                        detected.push_back(0);
+                        truepx.push_back(MCPStartPX->at(i));
+                        truepy.push_back(MCPStartPY->at(i));
+                        truepz.push_back(MCPStartPZ->at(i));
+                        if(_correct4origin){
+                            _MCPStartX.push_back(MCPStartX->at(i) - _util->GetOrigin()[0]);
+                            _MCPStartY.push_back(MCPStartY->at(i) - _util->GetOrigin()[1]);
+                            _MCPStartZ.push_back(MCPStartZ->at(i) - _util->GetOrigin()[2]);
+                            _MCPEndX.push_back(MCPEndX->at(i) - _util->GetOrigin()[0]);
+                            _MCPEndY.push_back(MCPEndY->at(i) - _util->GetOrigin()[1]);
+                            _MCPEndZ.push_back(MCPEndZ->at(i) - _util->GetOrigin()[2]);
+                        } else {
+                            _MCPStartX.push_back(MCPStartX->at(i));
+                            _MCPStartY.push_back(MCPStartY->at(i));
+                            _MCPStartZ.push_back(MCPStartZ->at(i));
+                            _MCPEndX.push_back(MCPEndX->at(i));
+                            _MCPEndY.push_back(MCPEndY->at(i));
+                            _MCPEndZ.push_back(MCPEndZ->at(i));
+                        }
+                        pdgmother.push_back(PDGMother->at(i));
+                        // save the true momentum
+                        truep.push_back(ptrue);
+                        // save the true angle
+                        _angle.push_back(angle);
+                        //Save MC process
+                        _MCProc.push_back(mcp_process);
+                        _MCEndProc.push_back(mcp_endprocess);
+                        mctime.push_back(time);
+                        etime.push_back(0.);
+                        erecon.push_back(0);
+                        _preco.push_back(0);
+                        anglereco.push_back(0);
+                        recopid.push_back(0);
+                        recopidecal.push_back(0);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        mctrkid.push_back(MCPTrkID->at(i));
+                        motherid.push_back(MCMotherIndex->at(i));
+                        // std::cout << "particle not seen in TPC, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
+                    }
                 }
             }
-
-            //Check truepdg and recopdg
-            //if( (std::fabs(truepdg.at(i)) == 11 || std::fabs(truepdg.at(i)) == 13 || std::fabs(truepdg.at(i)) == 211) && recopid.at(i) == 0 && trkLen.at(i) > 0)
-            //std::cout << "truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
         } // closes the MC truth loop
 
         _nFSP.push_back(nFSP);
