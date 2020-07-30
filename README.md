@@ -71,7 +71,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * mctrkid: number created in G4 to track the particles (relations mother <-> daughters). The original neutrino has a track id of -1 and then it is incremented by G4.
 
-  * motherid: id number associated with the mother mc particle -> returns the trackid of the mother of this particle
+  * motherid: id number associated with the mother mc particle -> returns the index in the MCP vector of the mother of this particle
 
   * mctime: detector response time/time information of the particle with respect to neutrino interaction time (which is 0 nano seconds)
 
