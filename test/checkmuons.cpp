@@ -4,15 +4,6 @@ void checkmuons()
 
     //Compare between ptrue <-> preco and angle <-> anglereco
     TChain *chain = new TChain("caf");
-
-    // for(int i = 5000; i < 5050; i++){
-    //     TString filename = TString::Format("../Cafs/caf_%i.root", i);
-    //     chain->Add(filename);
-    // }
-
-    // to read over a number of cafanatree files, un-comment lines 14, 15, 66 and comment out line 111
-    // for( int i = 0; i <= 20; ++i ) {
-    // chain->Add( Form("/pnfs/dune/persistent/users/afurmans/dirtProcessingOct2019/output/gasOnly/run_0/cafanatree_%d.root",i) );
     
     chain->Add("../caf.root");
 
