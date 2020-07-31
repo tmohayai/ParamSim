@@ -2,9 +2,9 @@ void CheckSizeBranches()
 {
     // CaliceStyle();
 
-    //Compare between ptrue <-> preco and angle <-> anglereco
+    //Read sizes of the caf tree vectors and check that the sizes are consistent 
 
-    //change the name of the directory that contains the root files as needed
+    //if you are reading only one file, for debugging  purposes: 1) comment out lines 8 through 39 and then again lines 145 and 146, 2) un-comment lines 41 and 42.   
     const char *dirname="/pnfs/dune/persistent/users/ND_GAr/2020_06_21/neutrino/";   
     
     const char *ext=".root";
@@ -30,23 +30,18 @@ void CheckSizeBranches()
     
     lista.push_back(result);
 
-    }
-    // for(int i = 5000; i < 5050; i++){
-    //     TString filename = TString::Format("../Cafs/caf_%i.root", i);
-    //     chain->Add(filename);
-    // }
-
     for(std::vector<const char*>::iterator it = lista.begin(); it != lista.end(); it++)
     {
 
     std::cout << *it << std::endl;
     string a(*it);
-    //chain->Add("caf.root");
     TFile * tf = new TFile ( Form("%s",a.c_str() ) );
     chain->Add( Form("%s/caf", a.c_str()) );
-     
+    
+    //TChain *chain = new TChain("caf");
+    //chain->Add("/pnfs/dune/persistent/users/ND_GAr/2020_06_21/neutrino/neutrino.nd_hall_mpd_only.volTPCGas.Ev336000.Ev336999.11141.caf.root"); 
 
-    std::cout << *it << std::endl;
+    //std::cout << *it << std::endl;
 
     int evt;
     std::vector<double>* mctime = 0;
@@ -139,12 +134,13 @@ void CheckSizeBranches()
         std::cout << "Size _nFSP: " << _nFSP->size() << " value " << _nFSP->at(0) << std::endl;
         std::cout << "Size detected: " << detected->size() << std::endl;
     	
-	    for(int i = 0; i < theta->size(); i++)
+	for(int i = 0; i < theta->size(); i++)
         {
    	
 		std::cout << "value of theta is: " << theta->at(i) << std::endl;	
 	
-	    } 
-    }
-  }
+	} 
+   }
+}
+}
 }
