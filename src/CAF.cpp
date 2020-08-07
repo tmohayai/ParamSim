@@ -699,7 +699,8 @@ void CAF::loop()
                                     std::cout << "Could not find particle in root pdg table, pdg " << pdg << std::endl;
                                     //deuteron
                                     if( pdg == 1000010020 ) {
-                                        float etrue = ptrue;
+                                        float mass = 1.8756;//in GeV mass deuteron
+                                        float etrue = std::sqrt(ptrue*ptrue + mass*mass) - mass;
                                         float ECAL_resolution = fRes->Eval(etrue)*etrue;
                                         float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
                                         erecon.push_back(ereco);
@@ -727,7 +728,8 @@ void CAF::loop()
                                     //separation mu/pi -> based on Chris study with only the ECAL (no Muon ID detector)
                                     //separation with p and mu/pi/e ?? high energy -> confusion with mu/pi, low energy confusion with e
                                     //using E/p to ID?
-                                    float etrue = ptrue;
+                                    float mass = part->Mass();//in GeV
+                                    float etrue = std::sqrt(ptrue*ptrue + mass*mass) - mass;
                                     float ECAL_resolution = fRes->Eval(etrue)*etrue;
                                     float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
                                     erecon.push_back((ereco > 0) ? ereco : 0.);
@@ -1061,7 +1063,8 @@ void CAF::loop()
                         //check if it can be detected by the ECAL
                         //Assumes 40% efficiency to detect
                         float random_number = _util->GetRamdomNumber();
-                        float true_KE = ptrue*ptrue / (2*neutron_mass); // in GeV
+                        float true_KE = std::sqrt(ptrue*ptrue + neutron_mass*neutron_mass) - neutron_mass;
+                        // float true_KE = ptrue*ptrue / (2*neutron_mass); // in GeV
                         int index = (true_KE >= 0.05) ? 1 : 0;
 
                         // std::cout << "KE " << true_KE << " index " << index << " 1 - eff " << 1-NeutronECAL_detEff[index] << " rdnm " << random_number << std::endl;
@@ -1523,8 +1526,15 @@ void CAF::loop()
                         mctime.push_back(time);
 
                         etime.push_back(ecaltime);
-                        float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
-                        float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
+
+                        TParticlePDG *part = TDatabasePDG::Instance()->GetParticle(abs(pdg));
+                        float mass = 0.;
+                        if(nullptr != part)
+                        mass = part->Mass();//in GeV
+
+                        float etrue = std::sqrt(ptrue*ptrue + mass*mass) - mass;
+                        float ECAL_resolution = fRes->Eval(etrue)*etrue;
+                        float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
                         erecon.push_back((ereco > 0) ? ereco : 0.);
 
                         //Electron
