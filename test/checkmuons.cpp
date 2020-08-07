@@ -67,7 +67,7 @@ void checkmuons()
     std::vector<float> *angle = 0;
     std::vector<float> *anglereco = 0;
     std::vector<float> *erecon = 0;
-
+    std::vector<string> *MCProc;
     chain->SetBranchAddress("truep", &truep);
     chain->SetBranchAddress("preco", &preco);
     chain->SetBranchAddress("truepdg", &truepdg);
@@ -75,7 +75,7 @@ void checkmuons()
     chain->SetBranchAddress("angle", &angle);
     chain->SetBranchAddress("anglereco", &anglereco);
     chain->SetBranchAddress("erecon", &erecon);
-
+    chain->SetBranchAddress("MCProc", &MCProc);
 
     for(int itree = 0; itree < chain->GetEntries(); itree++)
     {
@@ -83,7 +83,7 @@ void checkmuons()
 
         for(int i = 0; i < truep->size(); i++)
         {
-            //Protons for a test, un-comment the commented statement that follows to re-evaluate muons
+            //Protons for a test, un-comment the commented statement that follows to re-evaluate muons; to select primary (FS) protons or muons add this to the if statement MCProc->at(i) == "primary"
             if( std::abs(truepdg->at(i)) == 2212 ) { // if( std::abs(truepdg->at(i)) == 13 && std::abs(recopid->at(i)) == 13){
                 hPullMomentum->Fill( (truep->at(i) - preco->at(i)) / truep->at(i) );
                 hMomemtumTruevsReco->Fill(truep->at(i), preco->at(i));
