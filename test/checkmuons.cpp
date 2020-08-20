@@ -83,8 +83,7 @@ void checkmuons()
 
         for(int i = 0; i < truep->size(); i++)
         {
-            //Protons for a test, un-comment the commented statement that follows to re-evaluate muons; to select primary (FS) protons or muons add this to the if statement MCProc->at(i) == "primary"
-            if( std::abs(truepdg->at(i)) == 2212 ) { // if( std::abs(truepdg->at(i)) == 13 && std::abs(recopid->at(i)) == 13){
+                if( std::abs(truepdg->at(i)) == 13 && std::abs(recopid->at(i)) == 13){
                 hPullMomentum->Fill( (truep->at(i) - preco->at(i)) / truep->at(i) );
                 hMomemtumTruevsReco->Fill(truep->at(i), preco->at(i));
                 hPullAngle->Fill( (angle->at(i) - anglereco->at(i)) / angle->at(i) );
