@@ -23,6 +23,8 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
 - Generator-level information (more information about generator-level variables can be found at: https://internal.dunescience.org/doxygen/classsimb_1_1MCNeutrino.html)
 
+  * nFSP: number of neutrino interaction events -- can be used for matching events with number of final state particles 
+  
   * mode: interaction mode
 
   * q2: momentum transfer
@@ -63,9 +65,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * vertz: vertex of primary mc particle in z in cm
 
-- GEANT4-level information:
-
-  * nFSP: number of mc particles -- note that this variable is not limited to "primary" mc particles that emerge from the neutrino interaction vertices, rather it includes all mc particles
+- GEANT4-level information: 
 
   * pdgmother: pdg code of the particle that created the particle under consideration
 
