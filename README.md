@@ -15,7 +15,7 @@ In addition to reconstructing tracks, a dE/dx-based PID is implemented in the mo
 
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following:
 
-* Event: an art event (not neutrino-interaction event)
+* Event: an art event (not neutrino-interaction event rather the spill number)
 
 * Run: run #
 
