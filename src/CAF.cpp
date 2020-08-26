@@ -508,8 +508,8 @@ void CAF::loop()
 
             if( isNeutral )
             {
-                trkLen.push_back(0.);
-                trkLenPerp.push_back(0.);
+                trkLen.push_back(-1);
+                trkLenPerp.push_back(-1);
             }
             else
             {
@@ -652,14 +652,14 @@ void CAF::loop()
                             if(preco > 0)
                                 _preco.push_back(preco);
                             else
-                                _preco.push_back(0);
+                                _preco.push_back(-1);
 
                             anglereco.push_back(angle_reco);
 
-                            erecon.push_back(0);
-                            recopidecal.push_back(0);
-                            etime.push_back(0.);
-                            detected.push_back(0);
+                            erecon.push_back(-1);
+                            recopidecal.push_back(-1);
+                            etime.push_back(-1);
+                            detected.push_back(-1);
 
                             // std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in tpc, recopidecal " << recopidecal.at(nFSP) << std::endl;
                         }
@@ -691,7 +691,7 @@ void CAF::loop()
                             if(preco > 0)
                                 _preco.push_back(preco);
                             else
-                                _preco.push_back(0);
+                                _preco.push_back(-1);
 
                             anglereco.push_back(angle_reco);
 
@@ -710,7 +710,7 @@ void CAF::loop()
                                         float ECAL_resolution = fRes->Eval(etrue)*etrue;
                                         float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
                                         erecon.push_back(ereco);
-                                        recopidecal.push_back(0);
+                                        recopidecal.push_back(-1);
                                         detected.push_back(1);
                                         etime.push_back(ecaltime);
 
@@ -718,10 +718,10 @@ void CAF::loop()
                                     }
                                     else
                                     {
-                                        erecon.push_back(0);
-                                        recopidecal.push_back(0);
+                                        erecon.push_back(-1);
+                                        recopidecal.push_back(-1);
                                         detected.push_back(0);
-                                        etime.push_back(0.);
+                                        etime.push_back(-1);
 
                                         // std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, part is nullptr, recopidecal " << recopidecal.at(nFSP) << std::endl;
                                     }
@@ -837,7 +837,7 @@ void CAF::loop()
                                         // std::cout << "ptrue " << ptrue << std::endl;
                                     }
                                     else {
-                                        recopidecal.push_back(0);
+                                        recopidecal.push_back(-1);
                                         // std::cout << "ptrue " << ptrue << std::endl;
                                     }
 
@@ -862,7 +862,7 @@ void CAF::loop()
                                     recopidecal.push_back(13);
                                 }
                                 else{
-                                    recopidecal.push_back(0);
+                                    recopidecal.push_back(-1);
                                 }
 
                                 // std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, through calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
@@ -870,9 +870,9 @@ void CAF::loop()
                             else
                             {
                                 //Does not reach the ECAL???
-                                erecon.push_back(0.);
-                                recopidecal.push_back(0.);
-                                etime.push_back(0.);
+                                erecon.push_back(-1);
+                                recopidecal.push_back(-1);
+                                etime.push_back(-1);
                                 detected.push_back(0);
 
                                 // std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, does not reach ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
@@ -1035,13 +1035,13 @@ void CAF::loop()
                             _MCProc.push_back(mcp_process);
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
-                            etime.push_back(0.);
-                            erecon.push_back(0);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
-                            recopid.push_back(0);
-                            recopidecal.push_back(0);
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            etime.push_back(-1);
+                            erecon.push_back(-1);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
+                            recopid.push_back(-1);
+                            recopidecal.push_back(-1);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
                             // // std::cout << "particle seen in TPC but not {#pi, #mu, p, K, d, e}, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
@@ -1080,7 +1080,7 @@ void CAF::loop()
                             //TODO random is first interaction or rescatter and smear accordingly to Chris's study
                             //Detected in the ECAL
                             // recopid.push_back(2112);
-                            recopid.push_back(0); //reco pid set to 0?
+                            recopid.push_back(-1); //reco pid set to 0?
                             detected.push_back(1);
                             float eres = sigmaNeutronECAL_first * true_KE;
                             float ereco = _util->GaussianSmearing( true_KE, eres );
@@ -1113,10 +1113,10 @@ void CAF::loop()
                             mctime.push_back(time);
                             etime.push_back(ecaltime);
                             _angle.push_back(angle);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
                             recopidecal.push_back(2112);
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1128,8 +1128,8 @@ void CAF::loop()
                             //neutron not detected
                             detected.push_back(0);
                             truep.push_back(ptrue);
-                            recopid.push_back(0);
-                            erecon.push_back(0);
+                            recopid.push_back(-1);
+                            erecon.push_back(-1);
                             truepdg.push_back(pdg);
                             truepx.push_back(MCPStartPX->at(i));
                             truepy.push_back(MCPStartPY->at(i));
@@ -1154,12 +1154,12 @@ void CAF::loop()
                             _MCProc.push_back(mcp_process);
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
-                            etime.push_back(0.);
+                            etime.push_back(-1);
                             _angle.push_back(angle);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
-                            recopidecal.push_back(0);
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
+                            recopidecal.push_back(-1);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1173,8 +1173,8 @@ void CAF::loop()
                         //Endpoint is not in calo (TPC/isInBetween or outside Calo)
                         detected.push_back(0);
                         truep.push_back(ptrue);
-                        recopid.push_back(0);
-                        erecon.push_back(0);
+                        recopid.push_back(-1);
+                        erecon.push_back(-1);
                         truepdg.push_back(pdg);
                         truepx.push_back(MCPStartPX->at(i));
                         truepy.push_back(MCPStartPY->at(i));
@@ -1199,12 +1199,12 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
-                        etime.push_back(0.);
+                        etime.push_back(-1);
                         _angle.push_back(angle);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopidecal.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        _preco.push_back(-1);
+                        anglereco.push_back(-1);
+                        recopidecal.push_back(-1);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                             mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
@@ -1225,10 +1225,10 @@ void CAF::loop()
                     // std::cout << "Enter pi0 case" << std::endl;
                     //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
                     // float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
-                    erecon.push_back(0);
-                    recopid.push_back(0);
+                    erecon.push_back(-1);
+                    recopid.push_back(-1);
                     detected.push_back(0);
-                    recopidecal.push_back(0);
+                    recopidecal.push_back(-1);
 
                     truep.push_back(ptrue);
                     truepdg.push_back(pdg);
@@ -1256,11 +1256,11 @@ void CAF::loop()
                     _MCProc.push_back(mcp_process);
                     _MCEndProc.push_back(mcp_endprocess);
                     mctime.push_back(time);
-                    etime.push_back(0.);
-                    _preco.push_back(0);
-                    anglereco.push_back(0);
+                    etime.push_back(-1);
+                    _preco.push_back(-1);
+                    anglereco.push_back(-1);
 
-                    for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                    for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                         mctrkid.push_back(MCPTrkID->at(i));
                     motherid.push_back(MCMotherIndex->at(i));
 
@@ -1289,7 +1289,7 @@ void CAF::loop()
                             float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
                             float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
                             erecon.push_back( (ereco > 0) ? ereco : 0. );
-                            recopid.push_back(0);
+                            recopid.push_back(-1);
                             detected.push_back(1);
 
                             truep.push_back(ptrue);
@@ -1319,15 +1319,15 @@ void CAF::loop()
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
                             etime.push_back(ecaltime);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
 
                             //reach the ECAL, should be tagged as gamma
                             recopidecal.push_back(22);
 
                             // std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma not from pi0 in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1336,8 +1336,8 @@ void CAF::loop()
                         else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
                         {
                             //case endpoint is in the TPC (Converted!) or in between the TPC/ECAL
-                            erecon.push_back(0);
-                            recopid.push_back(0);
+                            erecon.push_back(-1);
+                            recopid.push_back(-1);
                             detected.push_back(0);
 
                             truep.push_back(ptrue);
@@ -1366,12 +1366,12 @@ void CAF::loop()
                             _MCProc.push_back(mcp_process);
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
-                            etime.push_back(0.);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
+                            etime.push_back(-1);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
                             //converted so not seen in ECAL
-                            recopidecal.push_back(0);
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            recopidecal.push_back(-1);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1393,7 +1393,7 @@ void CAF::loop()
                             float ECAL_resolution = fRes->Eval(ptrue)*ptrue;
                             float ereco = _util->GaussianSmearing(ptrue, ECAL_resolution);
                             erecon.push_back((ereco > 0) ? ereco : 0.);
-                            recopid.push_back(0);
+                            recopid.push_back(-1);
                             detected.push_back(1);
 
                             truep.push_back(ptrue);
@@ -1423,13 +1423,13 @@ void CAF::loop()
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
                             etime.push_back(ecaltime);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
 
                             //reaches the ecal
                             recopidecal.push_back(22);
 
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1440,8 +1440,8 @@ void CAF::loop()
                         else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint) || _util->isThroughCalo(epoint))
                         {
                             //from pi0 and converted in TPC or stopped between TPC/ECAL
-                            erecon.push_back(0);
-                            recopid.push_back(0);
+                            erecon.push_back(-1);
+                            recopid.push_back(-1);
                             detected.push_back(0);
 
                             truep.push_back(ptrue);
@@ -1470,12 +1470,12 @@ void CAF::loop()
                             _MCProc.push_back(mcp_process);
                             _MCEndProc.push_back(mcp_endprocess);
                             mctime.push_back(time);
-                            etime.push_back(0.);
-                            _preco.push_back(0);
-                            anglereco.push_back(0);
+                            etime.push_back(-1);
+                            _preco.push_back(-1);
+                            anglereco.push_back(-1);
                             //converted not seen by ecal
-                            recopidecal.push_back(0);
-                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                            recopidecal.push_back(-1);
+                            for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                                 mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
@@ -1638,14 +1638,14 @@ void CAF::loop()
                             // std::cout << "ptrue " << ptrue << std::endl;
                         }
                         else {
-                            recopidecal.push_back(0);
+                            recopidecal.push_back(-1);
                             // std::cout << "ptrue " << ptrue << std::endl;
                         }
 
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopid.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        _preco.push_back(-1);
+                        anglereco.push_back(-1);
+                        recopid.push_back(-1);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
 
                             mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
@@ -1700,13 +1700,13 @@ void CAF::loop()
                             recopidecal.push_back(13);
                         }
                         else {
-                            recopidecal.push_back(0);
+                            recopidecal.push_back(-1);
                         }
 
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopid.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        _preco.push_back(-1);
+                        anglereco.push_back(-1);
+                        recopid.push_back(-1);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
 
                             mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
@@ -1746,13 +1746,13 @@ void CAF::loop()
                         _MCProc.push_back(mcp_process);
                         _MCEndProc.push_back(mcp_endprocess);
                         mctime.push_back(time);
-                        etime.push_back(0.);
-                        erecon.push_back(0);
-                        _preco.push_back(0);
-                        anglereco.push_back(0);
-                        recopid.push_back(0);
-                        recopidecal.push_back(0);
-                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
+                        etime.push_back(-1);
+                        erecon.push_back(-1);
+                        _preco.push_back(-1);
+                        anglereco.push_back(-1);
+                        recopid.push_back(-1);
+                        recopidecal.push_back(-1);
+                        for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(-1);
                             mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
