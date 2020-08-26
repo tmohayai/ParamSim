@@ -23,7 +23,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
 - Generator-level information (more information about generator-level variables can be found at: https://internal.dunescience.org/doxygen/classsimb_1_1MCNeutrino.html)
 
-  * nFSP: number of neutrino interaction events -- can be used for matching events with number of final state particles 
+  * nFSP: number of monte-carlo particle in the event, not only primaries but all particles (includes shower particles) 
   
   * mode: interaction mode
 

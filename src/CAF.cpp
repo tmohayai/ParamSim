@@ -251,11 +251,10 @@ void CAF::ClearVectors()
 void CAF::CheckVectorSize()
 {
     std::cout << "Number of FSP " << _nFSP.at(0) << std::endl;
-    std::cout << "Size of true pdg " << truepdg.size() << std::endl;
-    std::cout << "Size of erecon " << erecon.size() << std::endl;
-    std::cout << "Size of recopidecal " << recopidecal.size() << std::endl;
+    std::cout << "Size of recopid " << recopid.size() << std::endl;
+    std::cout << "Size of detected " << detected.size() << std::endl;
 
-    if(_nFSP.at(0) != truepdg.size() || erecon.size() != recopidecal.size()) {
+    if(_nFSP.at(0) != recopid.size() || _nFSP.at(0) != detected.size()) {
         throw;
     }
 
@@ -406,7 +405,8 @@ void CAF::loop()
     _inttree->SetBranchAddress("TrajMCPX", &TrajMCPX);
     _inttree->SetBranchAddress("TrajMCPY", &TrajMCPY);
     _inttree->SetBranchAddress("TrajMCPZ", &TrajMCPZ);
-    _inttree->SetBranchAddress("TrajMCPTrajIndex", &TrajMCPTrajIndex);
+    // _inttree->SetBranchAddress("TrajMCPTrajIndex", &TrajMCPTrajIndex);
+    _inttree->SetBranchAddress("TrajMCPTrackID", &TrajMCPTrajIndex);
 
     //gamma, neutron, pi0, k0L, k0S, k0, delta0
     std::vector<int> neutrinos = {12, 14, 16};
@@ -585,7 +585,7 @@ void CAF::loop()
             //Visible in the TPC
             if( trkLen.at(nFSP) > gastpc_len )
             {
-            std::cout << "Enter TPC case" << std::endl;
+                std::cout << "Enter TPC case" << std::endl;
                 for (int pidm = 0; pidm < 6; ++pidm)
                 {
                     if ( abs(pdg) == pdg_charged.at(pidm) )
@@ -645,9 +645,10 @@ void CAF::loop()
                             preco = _util->GaussianSmearing( ptrue, sigmaP_short );
 
                             if(preco > 0)
-                            _preco.push_back(preco);
+                                _preco.push_back(preco);
                             else
-                            _preco.push_back(0);
+                                _preco.push_back(0);
+
                             anglereco.push_back(angle_reco);
 
                             erecon.push_back(0);
@@ -655,7 +656,7 @@ void CAF::loop()
                             etime.push_back(0.);
                             detected.push_back(0);
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in tpc, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in tpc, recopidecal " << recopidecal.at(nFSP) << std::endl;
                         }
                         else
                         {
@@ -683,9 +684,9 @@ void CAF::loop()
 
                             // save reconstructed momentum and angle to cafanatree
                             if(preco > 0)
-                            _preco.push_back(preco);
+                                _preco.push_back(preco);
                             else
-                            _preco.push_back(0);
+                                _preco.push_back(0);
 
                             anglereco.push_back(angle_reco);
 
@@ -708,7 +709,7 @@ void CAF::loop()
                                         detected.push_back(1);
                                         etime.push_back(ecaltime);
 
-                                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                                     }
                                     else
                                     {
@@ -717,7 +718,7 @@ void CAF::loop()
                                         detected.push_back(0);
                                         etime.push_back(0.);
 
-                                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, part is nullptr, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, part is nullptr, recopidecal " << recopidecal.at(nFSP) << std::endl;
                                     }
                                 }
                                 else
@@ -835,7 +836,7 @@ void CAF::loop()
                                         std::cout << "ptrue " << ptrue << std::endl;
                                     }
 
-                                std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, stop in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                                 }
                             }
                             else if( _util->isThroughCalo(epoint) )
@@ -859,7 +860,7 @@ void CAF::loop()
                                     recopidecal.push_back(0);
                                 }
 
-                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, through calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                                std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, through calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                             }
                             else
                             {
@@ -869,7 +870,7 @@ void CAF::loop()
                                 etime.push_back(0.);
                                 detected.push_back(0);
 
-                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, does not reach ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                                std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, does not reach ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
                             }
                         } //end endpoint is not in TPC
 
@@ -1036,16 +1037,16 @@ void CAF::loop()
                             recopid.push_back(0);
                             recopidecal.push_back(0);
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
                             // std::cout << "particle seen in TPC but not {#pi, #mu, p, K, d, e}, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, but not in charged list, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case seen tpc, but not in charged list, recopidecal " << recopidecal.at(nFSP) << std::endl;
                             break; //break out of the loop over the vertical bining!
                         }
                     }
                 } // closes the vertical bining loop of the pid matrix
-            std::cout << "End TPC case" << std::endl;
+                std::cout << "End TPC case" << std::endl;
             }//close if track_length > tpc_min_length
             else
             {
@@ -1057,7 +1058,7 @@ void CAF::loop()
                 //for neutrons
                 if(std::abs(pdg) == 2112)
                 {
-                std::cout << "Enter neutron case" << std::endl;
+                    std::cout << "Enter neutron case" << std::endl;
                     if(_util->PointInCalo(epoint)) //needs to stop in the ECAL
                     {
                         //check if it can be detected by the ECAL
@@ -1111,10 +1112,10 @@ void CAF::loop()
                             anglereco.push_back(0);
                             recopidecal.push_back(2112);
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, detected neutron, endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, detected neutron, endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
                             // std::cout << "Neutron detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                         }
                         else
@@ -1154,10 +1155,10 @@ void CAF::loop()
                             anglereco.push_back(0);
                             recopidecal.push_back(0);
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not detected neutron, endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not detected neutron, endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
                             // std::cout << "Neutron not detected in ECAL, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                         }
@@ -1199,12 +1200,12 @@ void CAF::loop()
                         anglereco.push_back(0);
                         recopidecal.push_back(0);
                         for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
+                            mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
-                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not detected neutron, not endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not detected neutron, not endpoint in ecal, recopidecal " << recopidecal.at(nFSP) << std::endl;
                     }
-                std::cout << "End neutron case" << std::endl;
+                    std::cout << "End neutron case" << std::endl;
                 }
 
                 //End neutrons
@@ -1216,7 +1217,7 @@ void CAF::loop()
                 //for pi0s
                 else if(std::abs(pdg) == 111)
                 {
-                std::cout << "Enter pi0 case" << std::endl;
+                    std::cout << "Enter pi0 case" << std::endl;
                     //TODO smear the pi0 energy (and decay vertex?) according to previous pi0 reco studies
                     // float ereco = _util->GaussianSmearing( std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass), ECAL_pi0_resolution*std::sqrt(ptrue*ptrue + pi0_mass*pi0_mass));
                     erecon.push_back(0);
@@ -1255,12 +1256,12 @@ void CAF::loop()
                     anglereco.push_back(0);
 
                     for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                    mctrkid.push_back(MCPTrkID->at(i));
+                        mctrkid.push_back(MCPTrkID->at(i));
                     motherid.push_back(MCMotherIndex->at(i));
 
-                std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, pi0, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, pi0, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
-                std::cout << "End pi0 case" << std::endl;
+                    std::cout << "End pi0 case" << std::endl;
                     // std::cout << "pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                 }
 
@@ -1273,7 +1274,7 @@ void CAF::loop()
                 //for gammas
                 else if(std::abs(pdg) == 22)
                 {
-                std::cout << "Enter gamma case" << std::endl;
+                    std::cout << "Enter gamma case" << std::endl;
                     if( PDGMother->at(i) != 111 )
                     {
                         //Endpoint is in the ECAL
@@ -1319,10 +1320,10 @@ void CAF::loop()
                             //reach the ECAL, should be tagged as gamma
                             recopidecal.push_back(22);
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma not from pi0 in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma not from pi0 in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
                             // std::cout << "gamma detected in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
@@ -1366,10 +1367,10 @@ void CAF::loop()
                             //converted so not seen in ECAL
                             recopidecal.push_back(0);
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma not from pi0 not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma not from pi0 not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
                             // std::cout << "gamma converted in ECAL not from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                         }
@@ -1424,10 +1425,10 @@ void CAF::loop()
                             recopidecal.push_back(22);
 
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
-                        std::cout << "FSP " << nFSP << " pdg "<< pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma from pi0 in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg "<< pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma from pi0 in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
 
                             // std::cout << "gamma detected in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                         }
@@ -1470,10 +1471,10 @@ void CAF::loop()
                             //converted not seen by ecal
                             recopidecal.push_back(0);
                             for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                            mctrkid.push_back(MCPTrkID->at(i));
+                                mctrkid.push_back(MCPTrkID->at(i));
                             motherid.push_back(MCMotherIndex->at(i));
 
-                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma from pi0 not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                            std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, gamma from pi0 not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                             // std::cout << "gamma converted in ECAL from pi0, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << std::endl;
                         }
                         else{
@@ -1481,7 +1482,7 @@ void CAF::loop()
                         }
                     }
 
-                std::cout << "End gamma case" << std::endl;
+                    std::cout << "End gamma case" << std::endl;
                 }
 
                 //end gammas
@@ -1492,7 +1493,7 @@ void CAF::loop()
 
                 else
                 {
-                std::cout << "Enter other case" << std::endl;
+                    std::cout << "Enter other case" << std::endl;
                     if(_util->PointInCalo(epoint))
                     {
                         truepdg.push_back(pdg);
@@ -1532,26 +1533,26 @@ void CAF::loop()
                         if(nullptr != part)
                         mass = part->Mass();//in GeV
 
-                        float etrue = std::sqrt(ptrue*ptrue + mass*mass) - mass;
-                        float ECAL_resolution = fRes->Eval(etrue)*etrue;
-                        float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
-                        erecon.push_back((ereco > 0) ? ereco : 0.);
+                    float etrue = std::sqrt(ptrue*ptrue + mass*mass) - mass;
+                    float ECAL_resolution = fRes->Eval(etrue)*etrue;
+                    float ereco = _util->GaussianSmearing(etrue, ECAL_resolution);
+                    erecon.push_back((ereco > 0) ? ereco : 0.);
 
                         //Electron
-                        if( abs(pdg) == 11 ){
-                            recopidecal.push_back(11);
-                        }
-                        else if( abs(pdg) == 13 || abs(pdg) == 211 )
-                        {
+                    if( abs(pdg) == 11 ){
+                        recopidecal.push_back(11);
+                    }
+                    else if( abs(pdg) == 13 || abs(pdg) == 211 )
+                    {
                             //Muons and Pions
                             //ptrue < 480 MeV/c 100% separation
                             //80% from 480 to 750
                             //90% up to 750 to 900
                             //95% over 900
-                            float random_number = _util->GetRamdomNumber();
+                        float random_number = _util->GetRamdomNumber();
 
-                            if(ptrue < 0.48) {
-                                std::cout << "ptrue " << ptrue << std::endl;
+                        if(ptrue < 0.48) {
+                            std::cout << "ptrue " << ptrue << std::endl;
                                 recopidecal.push_back(abs(pdg));//100% efficiency by range
                             }
                             else if(ptrue >= 0.48 && ptrue < 0.75)
@@ -1641,15 +1642,14 @@ void CAF::loop()
                         recopid.push_back(0);
                         for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
 
-                        mctrkid.push_back(MCPTrkID->at(i));
+                            mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
-                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                     }
                     else if (_util->isThroughCalo(epoint))
                     {
                         truepdg.push_back(pdg);
-                        detected.push_back(1);
                         truepx.push_back(MCPStartPX->at(i));
                         truepy.push_back(MCPStartPY->at(i));
                         truepz.push_back(MCPStartPZ->at(i));
@@ -1703,10 +1703,10 @@ void CAF::loop()
                         recopid.push_back(0);
                         for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
 
-                        mctrkid.push_back(MCPTrkID->at(i));
+                            mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
-                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, through calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, through calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                     }
                     else if(_util->PointInTPC(epoint) || _util->PointStopBetween(epoint))
                     {
@@ -1748,16 +1748,16 @@ void CAF::loop()
                         recopid.push_back(0);
                         recopidecal.push_back(0);
                         for (int pidr = 0; pidr < 6; ++pidr) prob_arr.push_back(0);
-                        mctrkid.push_back(MCPTrkID->at(i));
+                            mctrkid.push_back(MCPTrkID->at(i));
                         motherid.push_back(MCMotherIndex->at(i));
 
-                    std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
+                        std::cout << "FSP " << nFSP << " pdg " << pdg << " trk id " << MCPTrkID->at(i) << " case not seen tpc, not neutron, gamma or pi0, not in calo, recopidecal " << recopidecal.at(nFSP) << std::endl;
                         // std::cout << "particle not seen in TPC, truepid " << truepdg.at(i) << " recopid " << recopid.at(i) << " trk length " << trkLen.at(i) << std::endl;
                     }
                     else {
                         std::cout << "Problem...." << std::endl;
                     }
-                std::cout << "End other case" << std::endl;
+                    std::cout << "End other case" << std::endl;
                 }// end is not neutron, pi0 or gamma
             }// end not visible in TPC
         } // closes the MC truth loop
