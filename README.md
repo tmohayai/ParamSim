@@ -12,6 +12,7 @@ Following is the reconstruction approach taken to parametrize the detector respo
 In addition to reconstructing tracks, a dE/dx-based PID is implemented in the module. This is based on Tom Junk's parametrization of PEP-4's dE/dx curve: https://home.fnal.gov/~trj/mpd/dedx_sep2019/ (PID matrices are in pid.root file)
 
 *Units are in cm, GeV, ns.*
+*For vectors that are not filled, a default value of -1 is set in order to keep the vector length the same (nFSP)*
 
 The module is designed to take GArSoft's analysis tree, anatree as input and produce a so called "cafanatree" ntuple as output. A description of cafanatree tree variables are as the following:
 
@@ -23,8 +24,8 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
 - Generator-level information (more information about generator-level variables can be found at: https://internal.dunescience.org/doxygen/classsimb_1_1MCNeutrino.html)
 
-  * nFSP: number of neutrino interaction events -- can be used for matching events with number of final state particles 
-  
+  * nFSP: number of monte-carlo particle in the event, not only primaries but all particles (includes shower particles)
+
   * mode: interaction mode
 
   * q2: momentum transfer
@@ -65,7 +66,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * vertz: vertex of primary mc particle in z in cm
 
-- GEANT4-level information: 
+- GEANT4-level information:
 
   * pdgmother: pdg code of the particle that created the particle under consideration
 
@@ -115,7 +116,7 @@ The module is designed to take GArSoft's analysis tree, anatree as input and pro
 
   * anglereco: reconstructed angle of the particle with respect to the beam direction (wrt the z-direction)
 
-  * erecon: reconstructed energy of neutral and charged particles that reach the ECAL (when track length != 0 and endpoint is in the calo). Particles that are not reconstructed in the ECAL have erecon of 0.
+  * erecon: reconstructed energy of neutral and charged particles that reach the ECAL (when track length != 0 and endpoint is in the calo). Particles that are not reconstructed in the ECAL have erecon of 0. Calculated from ECAL parametrisation using E = sqrt( p*p + m*m ) - m (kinetic energy)
 
   * prob_arr: array of PID scores/probabilities (using log-likelihood) for reconstructed particles
 
