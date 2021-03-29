@@ -108,7 +108,7 @@ void CheckSizeBranches()
         chain->GetEntry(itree);
 
         std::cout << "Event " << evt << std::endl;
-        //std::cout << "theta " << theta->size() << std::endl;
+        std::cout << "theta " << theta->size() << std::endl;
         std::cout << "Size pdgmother: " << pdgmother->size() << std::endl;
         std::cout << "Size MCPTime: " << mctime->size() << std::endl;
         std::cout << "Size MCPStartX: " << _MCPStartX->size() << std::endl;
@@ -135,12 +135,12 @@ void CheckSizeBranches()
         std::cout << "Size _nFSP: " << _nFSP->size() << " value " << _nFSP->at(0) << std::endl;
         std::cout << "Size detected: " << detected->size() << std::endl;
     	
-	/*for(int i = 0; i < theta->size(); i++)
+	for(int i = 0; i < theta->size(); i++)
         {
    	
 		std::cout << "value of theta is: " << theta->at(i) << std::endl;	
 	
-	}*/ 
+	} 
    }
 }
 }
